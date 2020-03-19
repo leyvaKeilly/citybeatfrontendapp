@@ -1,47 +1,3 @@
-export const simpleNavBar = function () {
-
-    return `    
-    <!-- NAVBAR -->
-    <nav class=" z-depth-0 white lighten-4" id="navBar">
-        <div id="networks" class="content is-family-sans-serif has-text-weight-medium has-text-white">
-            <p>We have trainned ${numberOfNetworks} networks!!</p>
-        </div>
-        <div class="nav-wrapper container">
-            <a href="#" class="brand-logo">
-                <img src="img/logo.png" style="width: 50px; height: 50px; margin-top: 5px;">
-            </a>
-            <ul id="nav-mobile" class="right hide-on-med-and-down">
-                <li class="logged-in">
-                    <a href="#" id="homePage" class="grey-text">Home</a>
-                </li>                
-                <li class="logged-in">
-                    <a href="#" class="grey-text modal-trigger" data-target="modal-account">Account</a>
-                </li>
-                <li class="logged-in">
-                    <a href="#" id="workPlace" class="grey-text">Work Place</a>
-                </li>
-                <li class="logged-in">
-                    <a href="#" id="contactPage" class="grey-text">Contact Us</a>
-                </li>
-                <li class="logged-in">
-                    <a href="#" class="grey-text" id="logout">Logout</a>
-                </li>
-            </ul>            
-        </div>
-    </nav>
-
-    <!-- ACCOUNT MODAL -->
-    <div id="modal-account" class="modal">
-        <div class="modal-content center-align">
-            <br>
-            <p class="subtitle is-4">Account Details</p> 
-            <br>           
-            <div class="account-details"></div>
-        </div>
-    </div>
-`;
-};
-
 export const contactPageRender = function () {
 
     return `
@@ -52,11 +8,12 @@ export const contactPageRender = function () {
                     <div class="column">
                         <div class="content has-text-centered">
                             <br>
+                            <br>
                             <h1 class="title">
-                                <i>The Edge Cases</i> Team
+                                <i>Team D</i>
                             </h1>
                             <figure class="image">
-                                <img src="img/laptop2.jpg" alt="Placeholder image" style="width: 500px; height: 300px; margin-top: 50px">
+                                <img src="images/laptop2.jpg" alt="Placeholder image" style="width: 500px; height: 300px; margin-top: 50px">
                             </figure>
                         </div>
                     </div>            
@@ -64,14 +21,14 @@ export const contactPageRender = function () {
                         <article class="media">
                             <figure class="media-left image is-128x128">
                                 <p class="image is-128x128">
-                                    <img class="is-rounded" src="img/image1.png" alt="Placeholder image" style="width: 128px; height: 128px">
+                                    <img class="is-rounded" src="images/image1.png" alt="Keilly Leyva picture" style="width: 128px; height: 128px">
                                 </p>
                             </figure>
                             <div class="media-content">
                                 <div class="content">
                                     <p>
-                                        <h3> Keilly Leyva </h3>
-                                        <h5> lkeilly@live.unc.edu </h5>
+                                        <h3> <strong> Project Manager: </strong> Keilly Leyva </h3>
+                                        <h6> lkeilly@live.unc.edu </h6>
                                     </p>
                                 </div>
                             </div>
@@ -79,14 +36,14 @@ export const contactPageRender = function () {
                         <article class="media">
                             <figure class="media-left image is-128x128">
                                 <p class="image is-128x128">
-                                    <img class="is-rounded" src="img/micah.jpg" alt="Placeholder image" style="width: 128px; height: 128px">
+                                    <img class="is-rounded" src="imagenes/vijay.jpg" alt="Vijay Placeholder image" style="width: 128px; height: 128px">
                                 </p>
                             </figure>
                             <div class="media-content">
                                 <div class="content">
                                     <p>
-                                        <h3> Micah Jhaycraft </h3>
-                                        <h5> micahjhaycraft@gmail.com </h5>
+                                        <h3> <strong> Tech Lead: </strong> Vijay Rachakonda </h3>
+                                        <h6> vij@live.unc.edu </h6>
                                     </p>
                                 </div>
                             </div>
@@ -94,18 +51,33 @@ export const contactPageRender = function () {
                         <article class="media">
                             <figure class="media-left image is-128x128">
                                 <p class="image is-128x128">
-                                    <img class="is-rounded" src="img/elijah.jpg" alt="Placeholder image" style="width: 128px; height: 128px">
+                                    <img class="is-rounded" src="images/kevin.jpg" alt="Kevin Placeholder image" style="width: 128px; height: 128px">
                                 </p>
                             </figure>
                             <div class="media-content">
                                 <div class="content">
                                     <p>
-                                        <h3> Elija Wilde </h3>
-                                        <h5> eswilde98@gmail.com </h5>
+                                        <h3> <strong> Website Coordinator: </strong> Kevin Jackson  </h3>
+                                        <h6> kevinj89@live.unc.edu </h6>
                                     </p>
                                 </div>
                             </div>
-                        </article>             
+                        </article>
+                        <article class="media">
+                            <figure class="media-left image is-128x128">
+                                <p class="image is-128x128">
+                                    <img class="is-rounded" src="images/nick.jpg" alt="Nick Placeholder image" style="width: 128px; height: 128px">
+                                </p>
+                            </figure>
+                            <div class="media-content">
+                                <div class="content">
+                                    <p>
+                                        <h3> <strong> Client Manager: </strong> Nick Kellam </h3>
+                                        <h6> kellamni@live.unc.edu </h6>
+                                    </p>
+                                </div>
+                            </div>
+                        </article>               
                     </div>                    
                 </div>
                 <br>   
