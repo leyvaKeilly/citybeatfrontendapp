@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="node_modules/bulma/css/bulma.css" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
+    <script src="https://cdn.rawgit.com/BrainJS/brain.js/45ce6ffc/browser.js"></script>
+    <script src="https://unpkg.com/brain.js@1.0.0-rc.3/browser.js"></script>
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="style/css-final-project.css" />
+
+    <title>City News Beat AI Project</title>
+</head>
+
+<body class="grey lighten-3">
+    <div id=" page" class="container is-fluid">
+        <section class="hero is-medium is-dark is-bold">
+            <div class="hero-body">
+                <div class="container">
+                    <h1 class="title">
+                        Welcome to <i>City News Beat AI Project Demo</i>
+                    </h1>
+                </div>
+            </div>
+        </section>
+        <div id="root"></div>
+        <div id="body"></div>
+    </div>
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                <strong><i>City News Beat AI Project Demo</i></strong> website by <i>Team D</i>.
+                <br>
+                <a href="https://github.com/lkeilly/CityNewsBeatAIProject" target="_blank">Source code</a>.
+            </p>
+        </div>
+    </footer>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-app.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-analytics.js"></script>
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyAproty2g0IQ8ZdLAhYpsa3Wd7UtOaX95k",
+            authDomain: "comp426-final-project-3da5d.firebaseapp.com",
+            databaseURL: "https://comp426-final-project-3da5d.firebaseio.com",
+            projectId: "comp426-final-project-3da5d",
+            storageBucket: "comp426-final-project-3da5d.appspot.com",
+            messagingSenderId: "894585364264",
+            appId: "1:894585364264:web:52f38bf8e01fccc90b7a1d",
+            measurementId: "G-E45QT426X1"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+        //Make firestore references
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        //Google sign in
+        const provider = new firebase.auth.GoogleAuthProvider();
+        //Global variable
+        let numberOfNetworks;
+
+    </script>
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="node_modules/axios/dist/axios.js"></script>
+    <script src="/scripts/auth.js" type="module"></script>
+    <script src="/scripts/render.js" type="module"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
+    <script src="node_modules/jquery-ui-dist/external/jquery/jquery.js"></script>
+    <script src="node_modules/jquery-ui-dist/jquery-ui.js"></script>
+
+</body>
+
+</html>
+<!--script src="scripts/index.js"></script-->
