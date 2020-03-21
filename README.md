@@ -2,7 +2,7 @@
   City News Beat, Inc. owns and operates the streaming Television channels Tar Heel News Beat, Seattle News Beat, NYC News Beat and Bay Area News Beat for Roku users. Incubated as part of Cohort 11 in 2019 @Launch-Chapel Hill, a not-for-profit organization funded by the Town of Chapel Hill, Orange County and the University of North Carolina, City News Beat is committed to delivering an agenda-free view of local news and weather for the cord-cutter and Smart TV communities they serve across the USA. 
   We are going to create an A.I. engine that can read different data sources including questions asked at the time the app is loaded, that matches 3rd party data to know more about the device users’ interests. Our goal is to deliver each user a Newscast-for-1 based on those preferences.
   
-  One way to run this app:
+  # One way to run this app:
   - Clone this repo: copy the https address, open VScode, View / Command Palette / Git: Clone / paste the address / choose path for this       project.
   - Install dependencies: right click in root directory for this project from VScode / open in terminal / write in VScode terminal: npm install / npm init (press enter for all options)
   - Run app in browser: Write in VScode terminal: npx browser-sync start -sw
