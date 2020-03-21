@@ -43,7 +43,8 @@ export const buildANetwork = function (act, hidLay, nodesPerLay, iter, lrnRat, D
     }
     const network = new brain.NeuralNetwork(config);
 
-    network.train(trainData);
+    let stats = network.train(trainData);
+    console.log(stats);
 
     const accuracy = getAccuracy(network, testData); //0
     /*

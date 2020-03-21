@@ -49,6 +49,7 @@ export const workPlaceRender = function (user) {
     const $clear = $("#clear");
     $clear.click(() => handleClearButton(event));
 
+    //training network
     $("#network-form").on('change', '#csv', () => {
         let file = event.target.files[0];
         let $name = $(".file-name");
@@ -72,23 +73,24 @@ export const workPlaceRender = function (user) {
                         input: [],
                         output: []
                     }
-
+                    //First column is output value
                     temp.output = [arr[0]];
+                    //Rest of the columns is input values
                     for (let i = 1; i < arr.length; i++) {
                         temp.input.push(arr[i]);
                     }
                     DATA.push(temp)
-                    console.log(DATA)
+                    //console.log(DATA)
                 });
             }
         })
     });
-
-    $networks.on("click", ".trainButton", () => {
+    //Listener in run button
+    $networks.on("click", ".runButton", () => {
         trainNetwork(event, user);
     });
 }
-
+//Running trained network
 export const trainNetwork = function (event, user) {
     let myID = event.target.id;
     let myData = myNets[myID + ""];
@@ -98,10 +100,12 @@ export const trainNetwork = function (event, user) {
         myBoxes.push(parseFloat($myForm['box' + i + ":" + myID].value));
     }
     myBoxes = myBoxes.reverse()
+    console.log(myBoxes)
     let network = (netFromJson(myData.net))
     let result = network.run(myBoxes);
+    console.log(network.run(myBoxes));
     db.collection('users').doc(user.uid).collection('networks').doc(myID).update({
-        currentOutput: Math.round(result),
+        currentOutput: result,
     });
 }
 
@@ -145,9 +149,9 @@ export const handleSubmitButton = function (event, user) {
 
     //(act, hidLay, nodesPerLay, iter, lrnRat, DATA, numRows, inputColNames, outputColName) 
     const activationFunction = "sigmoid";
-    const hiddenLayers = 4;
-    const nodesPerLayer = 4;
-    const iterations = 300;
+    const hiddenLayers = 20;
+    const nodesPerLayer = 8;
+    const iterations = 3000;
     const learningRate = 0.5;
 
     let myNetObj = buildANetwork(activationFunction, hiddenLayers, nodesPerLayer, iterations, learningRate, DATA, DATA.length, columns, pdict);
@@ -241,7 +245,7 @@ export const renderCreateNetworksArea = function () {
           
                     <div class="field is-grouped">
                         <div class="control">
-                            <button id="submit" class="button is-link" type="submit">Submit</button>
+                            <button id="submit" class="button is-link" type="submit">Train</button>
                         </div>
                         <div class="control">
                             <button id="clear" class="button is-link is-light" type="buttom">Clear</button>
@@ -317,8 +321,8 @@ export const renderNetworksArea = function (network) {
                         </div>
                         <div class="columns is-mobile is-centered is-vcentered">
                             <div class="column">
-                                <button id="${network.id}" class="trainButton button is-link"">
-                                    Train
+                                <button id="${network.id}" class="runButton button is-link">
+                                    Run
                                 </button>
                             </div>
                             <div class="column">
@@ -357,7 +361,7 @@ export const renderNetworksArea = function (network) {
                         <input type="text" id="edit-description">
                         <label for="edit-description">Description</label>
                     </div>
-                    <button id="saveButton" class="btn yellow darken-2 z-depth-0">Save</button>
+                    <button id="saveButton" class="btn grey darken-3 z-depth-0">Save</button>
                 </form>
             </div>
         </div>
