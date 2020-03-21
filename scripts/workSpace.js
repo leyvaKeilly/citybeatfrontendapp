@@ -149,10 +149,10 @@ export const handleSubmitButton = function (event, user) {
 
     //(act, hidLay, nodesPerLay, iter, lrnRat, DATA, numRows, inputColNames, outputColName) 
     const activationFunction = "sigmoid";
-    const hiddenLayers = 20;
-    const nodesPerLayer = 8;
-    const iterations = 3000;
-    const learningRate = 0.5;
+    const hiddenLayers = 4;
+    const nodesPerLayer = 4;
+    const iterations = 1500;
+    const learningRate = 0.005;
 
     let myNetObj = buildANetwork(activationFunction, hiddenLayers, nodesPerLayer, iterations, learningRate, DATA, DATA.length, columns, pdict);
 

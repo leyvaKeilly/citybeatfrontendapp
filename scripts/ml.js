@@ -36,6 +36,7 @@ export const buildANetwork = function (act, hidLay, nodesPerLay, iter, lrnRat, D
     }
 
     const config = {
+        errorThresh: 0.011,
         activation: act,  //Sets the function for activation
         hiddenLayers: myArr,  //Sets the number of hidden layers
         iterations: iter, //The number of runs before  the neural net and then stop training
@@ -63,6 +64,7 @@ export const buildANetwork = function (act, hidLay, nodesPerLay, iter, lrnRat, D
 
         data: DATA,
         settings: {
+            errorThresh: 0.011,
             activation: act,
             hiddenLayers: myArr,
             iterations: iter,
