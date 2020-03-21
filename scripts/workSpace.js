@@ -78,7 +78,7 @@ export const workPlaceRender = function (user) {
                         temp.input.push(arr[i]);
                     }
                     DATA.push(temp)
-                    //console.log(DATA)
+                    console.log(DATA)
                 });
             }
         })

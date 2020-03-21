@@ -41,42 +41,40 @@
             </p>
         </div>
     </footer>
-
     <!-- The core Firebase JS SDK is always required and must be listed first -->
-    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js"></script>
 
     <!-- TODO: Add SDKs for Firebase products that you want to use
      https://firebase.google.com/docs/web/setup#available-libraries -->
-    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-storage.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.5.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-storage.js"></script>
 
     <script>
         // Your web app's Firebase configuration
         var firebaseConfig = {
-            apiKey: "AIzaSyAproty2g0IQ8ZdLAhYpsa3Wd7UtOaX95k",
-            authDomain: "comp426-final-project-3da5d.firebaseapp.com",
-            databaseURL: "https://comp426-final-project-3da5d.firebaseio.com",
-            projectId: "comp426-final-project-3da5d",
-            storageBucket: "comp426-final-project-3da5d.appspot.com",
-            messagingSenderId: "894585364264",
-            appId: "1:894585364264:web:52f38bf8e01fccc90b7a1d",
-            measurementId: "G-E45QT426X1"
+            apiKey: "AIzaSyC6hCLidKdUA5jU49I5XmXkRKEXWKAIpSk",
+            authDomain: "comp523-citynewsbeatproject.firebaseapp.com",
+            databaseURL: "https://comp523-citynewsbeatproject.firebaseio.com",
+            projectId: "comp523-citynewsbeatproject",
+            storageBucket: "comp523-citynewsbeatproject.appspot.com",
+            messagingSenderId: "339332955538",
+            appId: "1:339332955538:web:149ba40749fde1d52b554b",
+            measurementId: "G-D0C3LZLX4Q"
         };
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         firebase.analytics();
+
         //Make firestore references
         const auth = firebase.auth();
         const db = firebase.firestore();
         const storage = firebase.storage();
         //Google sign in
         const provider = new firebase.auth.GoogleAuthProvider();
-        //Global variable
-        let numberOfNetworks;
-
     </script>
+
     <!-- Compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="node_modules/axios/dist/axios.js"></script>
