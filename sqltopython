@@ -1,0 +1,44 @@
+import psycopg2
+import pandas as pd
+from sqlalchemy import create_engine
+
+aidata = pd.ExcelFile('filepath//AI_Data.xlsx')
+userinteractions = aidata.parse(sheet_name=2)
+userinteractions['vid_selected'] = userinteractions['vid_selected'].apply(lambda x: 'True' if x==1 else 'False')
+userinteractions['vid_skipped'] = userinteractions['vid_skipped'].apply(lambda x: 'True' if x==1 else 'False')
+videolibrary = aidata.parse(sheet_name=1)
+userinfo = aidata.parse(sheet_name=3)
+
+dbusername = 'postgres'
+password = 'password'
+host = '127.0.0.1'
+port = '5432'
+database = 'AIData'
+
+engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
+                       .format(user=dbusername,
+                               pw=password,
+                               db=database))
+
+
+try:
+    connection = psycopg2.connect(user = dbusername,
+                                  password = password,
+                                  host = host,
+                                  port = port,
+                                  database = database)
+
+    #cursor = connection.cursor()
+    userinfo.to_sql('userinfo', con = engine, if_exists = 'append', chunksize = 1000)
+    userinteractions.to_sql('userinteractions', con = engine, if_exists = 'append', chunksize = 1000)
+    videolibrary.to_sql('videolibrary', con = engine, if_exists = 'append', chunksize = 1000)
+
+
+except (Exception, psycopg2.Error) as error :
+    print ("Error while connecting to PostgreSQL", error)
+finally:
+    #closing database connection.
+        if(connection):
+            #cursor.close()
+            connection.close()
+            print("PostgreSQL connection is closed")
