@@ -1,8 +1,8 @@
-#this script is highly dependent on how you have your tables set up in postgresql
+#this script is completely dependent on how you have your tables set up in postgresql
 #here are the table names, columns,primary keys, and datatypes to use which is shown in this format:
 #
-#table, primary keys: column1, column2, etc.
-#column:datatype,column:datatype,etc.
+#tablename, primary keys: columnname1, columnname2, etc.
+#columnname:datatype,columnname:datatype,etc.
 #--------------------------------------------------------------
 #userinfo, primary keys: uid
 #uid:text,dob:date,index:integer
