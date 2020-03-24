@@ -12,7 +12,7 @@
   - Remember to create your own branch: 
       - write in VScode terminal: git checkout -b nameOfYourBranch
       - to go to your branch: git checkout nameOfYourBranch
-  - Before working on your branch make sure your branch is up to date with the master (git pull)
+  - Before working on your branch make sure your branch is up to date with the master (git checkout nameOfYourBranch / git merge origin/master / git push origin nameOfYourBranch)
   - Save changes periodically to your branch:
       - git status    //So you know everything that has been updated
       - git add .     //Add those changes to the working tree
