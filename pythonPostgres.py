@@ -1,11 +1,21 @@
+# postgres connection
+
+# connection = psycopg2.connect(
+#   host="10.0.0.78",
+#  database="postgres",
+# user="postgres",
+# password="Keilly2020COVID19"
+# )
+
+import os
+import urllib.parse as up
 import psycopg2
 
+# elephantSQL connection
+up.uses_netloc.append("postgres")
+
 connection = psycopg2.connect(
-    host="10.0.0.78",
-    database="postgres",
-    user="postgres",
-    password="Keilly2020COVID19"
-)
+    "dbname='dxxgpeye' user='dxxgpeye' host='drona.db.elephantsql.com' password='LuMS6WYy5EDkUs85hXToB9GtWGF78NSM'")
 
 # creating cursor
 cur = connection.cursor()
