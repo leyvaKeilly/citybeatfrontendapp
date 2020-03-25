@@ -1,0 +1,79 @@
+import psycopg2
+import pandas as pd
+import numpy as np
+from sqlalchemy import create_engine
+
+uid = 'cgb456' #select userid that you want to preprocess
+dbusername = 'username'
+password = 'password'
+host = '127.0.0.1'
+port = '5432'
+database = 'AIData'
+
+engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
+                       .format(user=dbusername,
+                               pw=password,
+                               db=database))
+
+sql_categories = """select primary_category,sub_category, sub_sub_category, userinteractions.vid 
+from userinteractions, videolibrary, userinfo 
+where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
+and userinfo.uid = '{uid}' """.format(uid=uid)
+
+sql_interactionspan = """select date_watched,release_date, userinteractions.vid 
+from userinteractions, videolibrary, userinfo 
+where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
+and userinfo.uid = '{uid}'""".format(uid=uid)
+
+sql_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
+from userinteractions, videolibrary, userinfo 
+where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
+and userinfo.uid = '{uid}'""".format(uid=uid)
+
+sql_vid_num_views = """select videolibrary.vid, count(userinteractions.uid) as num_views
+from userinteractions, videolibrary, userinfo
+where userinfo.uid = userinteractions.uid and
+userinteractions.vid = videolibrary.vid
+group by videolibrary.vid
+having videolibrary.vid in
+(select userinteractions.vid 
+from userinteractions, videolibrary, userinfo 
+where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
+and userinfo.uid = '{uid}')""".format(uid=uid)
+
+sql_vid_num_selected = """select videolibrary.vid, count(userinteractions.uid) as num_selected 
+from userinteractions, videolibrary, userinfo 
+where userinteractions.vid = videolibrary.vid 
+and userinfo.uid = userinteractions.uid 
+and userinteractions.vid_selected = true
+group by videolibrary.vid
+having videolibrary.vid in
+(select userinteractions.vid 
+from userinteractions, videolibrary, userinfo 
+where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
+and userinfo.uid = '{uid}')""".format(uid=uid)
+
+sql_primary_cat_count = "select count(distinct primary_category) from videolibrary"
+sql_sub_cat_count = "select count(distinct sub_category) from videolibrary"
+sql_sub_sub_cat_count = "select count(distinct sub_sub_category) from videolibrary"
+
+categories = pd.read_sql_query(sql_categories,con=engine)
+interactionspan = pd.read_sql_query(sql_interactionspan,con=engine)
+interactionspan['interactionspan_days'] = interactionspan['date_watched'].sub(interactionspan['release_date'], axis=0)/np.timedelta64(1, 'D')
+del interactionspan['date_watched']
+del interactionspan['release_date']
+time_watched_ratio = pd.read_sql_query(sql_time_watched,con=engine)
+time_watched_ratio['watch_ratio'] = time_watched_ratio['amount_of_time_watched']/time_watched_ratio['length']
+del time_watched_ratio['amount_of_time_watched']
+del time_watched_ratio['length']
+vid_num_views = pd.read_sql_query(sql_vid_num_views,con=engine)
+vid_num_selected = pd.read_sql_query(sql_vid_num_selected,con=engine)
+
+primary_cat_count = pd.read_sql_query(sql_primary_cat_count,con=engine)
+sub_cat_count = pd.read_sql_query(sql_sub_cat_count,con=engine)
+sub_sub_cat_count = pd.read_sql_query(sql_sub_sub_cat_count,con=engine)
+
+final = pd.concat([categories,interactionspan,time_watched_ratio,vid_num_views,vid_num_selected], axis=1, join='outer')
+#final = pd.concat([final,vid_num_views,vid_num_selected], axis=1, join='outer')
+del final['vid']
+final = final.fillna(value=0)
