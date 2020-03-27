@@ -1,7 +1,7 @@
 {
   "name": "citynewsbeataiproject",
   "version": "1.0.0",
-  "description": "",
+  "description": "City News Beat, Inc. owns and operates the streaming Television channels Tar Heel News Beat, Seattle News Beat, NYC News Beat and Bay Area News Beat for Roku users. Incubated as part of Cohort 11 in 2019 @Launch-Chapel Hill, a not-for-profit organization funded by the Town of Chapel Hill, Orange County and the University of North Carolina, City News Beat is committed to delivering an agenda-free view of local news and weather for the cord-cutter and Smart TV communities they serve across the USA.    We are going to create an A.I. engine that can read different data sources including questions asked at the time the app is loaded, that matches 3rd party data to know more about the device users’ interests. Our goal is to deliver each user a Newscast-for-1 based on those preferences.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

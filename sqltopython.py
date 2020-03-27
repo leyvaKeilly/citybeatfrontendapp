@@ -17,19 +17,19 @@ import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine
 
-filepath = 'filepath that AI_Data.xlsx is stored' #make sure its an .xlsx file
-aidata = pd.ExcelFile('filepath//AI_Data.xlsx')
+# filepath = 'Users/vij/Downloads/' #make sure its an .xlsx file
+aidata = pd.ExcelFile('/Users/vij/Downloads/AI_Data.xlsx')
 userinteractions = aidata.parse(sheet_name=2)
 userinteractions['vid_selected'] = userinteractions['vid_selected'].apply(lambda x: 'True' if x==1 else 'False')
 userinteractions['vid_skipped'] = userinteractions['vid_skipped'].apply(lambda x: 'True' if x==1 else 'False')
 videolibrary = aidata.parse(sheet_name=1)
 userinfo = aidata.parse(sheet_name=3)
 
-dbusername = 'database username'
-password = 'password'
-host = '127.0.0.1'
+dbusername = 'postgres'
+password = 'Carviomri9!!'
+host = 'localhost'
 port = '5432'
-database = 'name of your local database'
+database = 'recdb'
 
 engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
                        .format(user=dbusername,
