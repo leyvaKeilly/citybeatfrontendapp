@@ -121,4 +121,16 @@ keys = list(ttuserint.vid.values)
 vidfeatures = vidfeatures[~vidfeatures.vid.isin(keys)]
 
 ttuserint = ttuserint.drop('vid',axis=1) #final table. use this to test/train the model
-vidfeatures = vidfeatures.drop('vid',axis=1) #final table. use this to push through the already trained model
+
+#return list of probabilities that this user will want to watch that corresponding video
+def implementLogisticRegression(ttuserint,vidfeatures):    
+    from sklearn.linear_model import LogisticRegression
+
+    y = ttuserint['if_watched']
+    features = list(set(ttuserint.columns) - set(['if_watched']))
+    X = ttuserint[features]
+    model = LogisticRegression(solver='liblinear').fit(X,y)
+    
+    vids = np.array(vidfeatures['vid'])
+    vids_prob = model.predict_proba(vidfeatures.drop('vid',axis=1))[:,1]
+    return(sorted(zip(vids_prob,vids), reverse=True))
