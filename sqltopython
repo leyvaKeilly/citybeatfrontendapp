@@ -11,7 +11,7 @@
 #uid:text,vid:text,date_watched:timestamp without time zone,amount_of_time_watched:smallint,vid_selected:boolean,vid_skipped:boolean,index:integer
 #
 #videolibrary, primary keys: vid
-#vid:text,title:string,primary_category:text,sub_category:text,sub_sub_category:text,length:smallint,index:integer,release_date:timestamp without time zone
+#vid:text,title:text,primary_category:text,sub_category:text,sub_sub_category:text,length:smallint,index:integer,release_date:timestamp without time zone
 
 import psycopg2
 import pandas as pd
