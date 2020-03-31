@@ -4,7 +4,8 @@ import numpy as np
 from sqlalchemy import create_engine
 
 #enter the unique user id that the model will train on
-uid = 'cgb456'
+uids = {1:'abc123',2:'cgb456',3:'brc789',4:'nsk579'}
+uid = uids[2]
 
 dbusername = 'username'
 password = 'password'
@@ -33,7 +34,7 @@ group by videolibrary.vid"""
 sql_num_users = """select count(userinfo.uid) as num_users
 from userinfo"""
 
-sql_vid_num_selected = """select videolibrary.vid, count(userinteractions.uid) as num_selected 
+sql_vid_num_selected = """select videolibrary.vid, count(distinct userinteractions.uid) as num_selected 
 from userinteractions, videolibrary
 where userinteractions.vid = videolibrary.vid 
 and userinteractions.vid_selected = true
@@ -131,6 +132,73 @@ def implementLogisticRegression(ttuserint,vidfeatures):
     X = ttuserint[features]
     model = LogisticRegression(solver='liblinear').fit(X,y)
     
+    #uncomment checkAccuracy to check information on model accuracy
+    #checkAccuracy(X,y,5,'logreg')
+    
     vids = np.array(vidfeatures['vid'])
     vids_prob = model.predict_proba(vidfeatures.drop('vid',axis=1))[:,1]
     return(sorted(zip(vids_prob,vids), reverse=True))
+
+#knn ml model
+def runKNN(ttuserint, vidfeatures):
+    from sklearn.neighbors import KNeighborsClassifier
+    
+    y = ttuserint['if_watched']
+    features = list(set(ttuserint.columns) - set(['if_watched']))
+    X = ttuserint[features]
+    
+    #uncomment checkAccuracy to check information on model accuracy
+    #checkAccuracy(X,y,5,'knn')
+    model = KNeighborsClassifier(n_neighbors = 3, weights = 'uniform', metric = 'minkowski').fit(X,y)
+    vids = np.array(vidfeatures['vid'])
+    vids_prob = model.predict_proba(vidfeatures.drop('vid',axis=1))[:,1]
+    return(sorted(zip(vids_prob,vids), reverse=True))
+  
+#returns the F1 score and results from confusion matrix. 
+#The F1 score is define as follows: F1 = 2 * (precision * recall) / (precision + recall)
+def checkAccuracy(X, y, numsplits, modelSelection):
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import f1_score
+    from sklearn.metrics import confusion_matrix
+
+    kf = KFold(n_splits = numsplits)
+    f1_scores = []
+    conf_matrices = []
+    sample_size = 0
+    final_conf_matrix = [[0,0],[0,0]]
+    for train_index, test_index in kf.split(X):
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        if modelSelection == 'logreg':
+            from sklearn.linear_model import LogisticRegression
+            model = LogisticRegression(solver='liblinear').fit(X_train,y_train)
+            y_pred = model.predict(X_test)
+            f1_scores.append(f1_score(y_test, y_pred, average='weighted'))
+            conf_matrices.append(confusion_matrix(y_test, y_pred))
+        elif modelSelection == 'knn':
+            from sklearn.neighbors import KNeighborsClassifier
+            model = KNeighborsClassifier(n_neighbors = 3, weights = 'uniform', metric = 'minkowski').fit(X,y)
+            y_pred = model.predict(X_test)
+            f1_scores.append(f1_score(y_test, y_pred, average='weighted'))
+            conf_matrices.append(confusion_matrix(y_test, y_pred))
+    avg_f1_scores = sum(f1_scores)/len(f1_scores)
+
+    for m in conf_matrices:
+        if len(m) == 1:
+            sample_size = sample_size + m[0][0]
+            final_conf_matrix[0][0] += m[0][0]
+        else:
+            sample_size = sample_size + m[0][0] + m[0][1] + m[1][0] + m[1][1]
+            final_conf_matrix[0][0] += m[0][0]
+            final_conf_matrix[0][1] += m[0][1]
+            final_conf_matrix[1][0] += m[1][0]
+            final_conf_matrix[1][1] += m[1][1]
+    print('The F1 score is a value between 0 and 1. The closer to 1, the better the score.')
+    print('Average F1 score: '+str(round(avg_f1_scores,4)))
+    print()
+    print('Normalized confusion matrix results below. Values are between 0 and 1.\nTrue Positive + True Negative = F1 score.\n')
+    print('True Positive: '+str(round(final_conf_matrix[0][0]/sample_size,2))+' (model is correct when it says you like video)')
+    print('False Positive (model error): '+str(round(final_conf_matrix[0][1]/sample_size,2))+' (model says you like a video when you don\'t)')
+    print('True Negative: '+str(round(final_conf_matrix[1][1]/sample_size,2))+' (model is correct when it says you dont like video)')
+    print('False Negative (model error): '+str(round(final_conf_matrix[1][0]/sample_size,2))+' (model says you dont like video when you do)')      
+    
