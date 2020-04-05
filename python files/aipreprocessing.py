@@ -18,7 +18,7 @@ engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
                                pw=password,
                                db=database))
 
-sql_categories = """select vid,primary_category,sub_category,sub_sub_category
+sql_categories = """select vid,title,primary_category,sub_category,sub_sub_category
 from videolibrary"""
 
 sql_user_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
@@ -78,6 +78,7 @@ user_time_watched_ratio['if_watched'] = np.where(user_time_watched_ratio['amount
 
 #table of the categories for all videos in the videolibrary
 categories = pd.read_sql_query(sql_categories,con=engine)
+categories['title'] = categories['title'].apply(rstrip)
 categories['primary_category'] = categories['primary_category'].apply(rstrip)
 categories['sub_category'] = categories['sub_category'].apply(rstrip)
 categories['sub_sub_category'] = categories['sub_sub_category'].apply(rstrip)
@@ -121,7 +122,7 @@ ttuserint = pd.merge(vidfeatures,user_time_watched_ratio,how='inner',on='vid').d
 keys = list(ttuserint.vid.values)
 vidfeatures = vidfeatures[~vidfeatures.vid.isin(keys)]
 
-ttuserint = ttuserint.drop('vid',axis=1) #final table. use this to test/train the model
+ttuserint = ttuserint.drop(['vid', 'title'],axis=1) #final table. use this to test/train the model
 
 #return list of probabilities that this user will want to watch that corresponding video
 def implementLogisticRegression(ttuserint,vidfeatures):    
@@ -136,8 +137,9 @@ def implementLogisticRegression(ttuserint,vidfeatures):
     #checkAccuracy(X,y,5,'logreg')
     
     vids = np.array(vidfeatures['vid'])
-    vids_prob = model.predict_proba(vidfeatures.drop('vid',axis=1))[:,1]
-    return(sorted(zip(vids_prob,vids), reverse=True))
+    titles = np.array(vidfeatures['title'])
+    vids_prob = model.predict_proba(vidfeatures.drop(['vid', 'title'], axis=1))[:,1]
+    return(sorted(zip(vids_prob,vids, titles), reverse=True))
 
 #knn ml model
 def runKNN(ttuserint, vidfeatures):
@@ -151,8 +153,9 @@ def runKNN(ttuserint, vidfeatures):
     #checkAccuracy(X,y,5,'knn')
     model = KNeighborsClassifier(n_neighbors = 3, weights = 'uniform', metric = 'minkowski').fit(X,y)
     vids = np.array(vidfeatures['vid'])
-    vids_prob = model.predict_proba(vidfeatures.drop('vid',axis=1))[:,1]
-    return(sorted(zip(vids_prob,vids), reverse=True))
+    titles = np.array(vidfeatures['title'])
+    vids_prob = model.predict_proba(vidfeatures.drop(['vid','title'],axis=1))[:,1]
+    return(sorted(zip(vids_prob,vids, titles), reverse=True))
   
 #returns the F1 score and results from confusion matrix. 
 #The F1 score is define as follows: F1 = 2 * (precision * recall) / (precision + recall)
@@ -201,4 +204,3 @@ def checkAccuracy(X, y, numsplits, modelSelection):
     print('False Positive (model error): '+str(round(final_conf_matrix[0][1]/sample_size,2))+' (model says you like a video when you don\'t)')
     print('True Negative: '+str(round(final_conf_matrix[1][1]/sample_size,2))+' (model is correct when it says you dont like video)')
     print('False Negative (model error): '+str(round(final_conf_matrix[1][0]/sample_size,2))+' (model says you dont like video when you do)')      
-    
