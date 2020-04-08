@@ -153,6 +153,7 @@ def runKNN(ttuserint, vidfeatures):
     vids = np.array(vidfeatures['vid'])
     vids_prob = model.predict_proba(vidfeatures.drop('vid',axis=1))[:,1]
     return(sorted(zip(vids_prob,vids), reverse=True))
+
   
 #returns the F1 score and results from confusion matrix. 
 #The F1 score is define as follows: F1 = 2 * (precision * recall) / (precision + recall)
@@ -201,4 +202,4 @@ def checkAccuracy(X, y, numsplits, modelSelection):
     print('False Positive (model error): '+str(round(final_conf_matrix[0][1]/sample_size,2))+' (model says you like a video when you don\'t)')
     print('True Negative: '+str(round(final_conf_matrix[1][1]/sample_size,2))+' (model is correct when it says you dont like video)')
     print('False Negative (model error): '+str(round(final_conf_matrix[1][0]/sample_size,2))+' (model says you dont like video when you do)')      
-   
+
