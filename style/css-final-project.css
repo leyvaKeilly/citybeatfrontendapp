@@ -15,7 +15,7 @@
     animation: mymove 5s infinite;
   }
 
-.columns{
+#columns{
   margin-top: 5px;
   margin-bottom: 5px;
   height:100%;
@@ -60,3 +60,19 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+input[type=checkbox] {
+  display:none;
+  }
+  input[type=checkbox] + label
+  {
+  background: rgb(194, 192, 192);
+  height: 16px;
+  width: 16px;
+  display:inline-block;
+  padding: 0 0 0 0px;
+  }
+  input[type=checkbox]:checked + label
+  {
+  background: #0080FF;
+  }
+ 
