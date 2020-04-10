@@ -30,4 +30,3 @@ input[type=checkbox] + label {
 input[type=checkbox]:checked + label {
   background: rgb(1, 99, 197);
 }
- 
