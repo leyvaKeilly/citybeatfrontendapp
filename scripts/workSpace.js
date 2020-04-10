@@ -1,33 +1,41 @@
 let pdict = "";
-let model = '';
+let model = "";
 let users = [];
 let featureSettings = [];
 let DATA = [];
 
-export const workPlaceRender = function (user) {
+export const workPlaceRender = function () {
     let modals;
     const $body = $("#body");
-    $body.html(renderCreateNetworksArea());
-    const $networks = $("#neurons");
+
     modals = document.querySelectorAll('.modal');
     M.Modal.init(modals);
 
-    // submit
-    const $submit = $("#submit");
-    $submit.click(() => handleSubmitButton(event, $networks[0]));
+    //Rendering workPlace body
+    $body.html(renderFormArea());
+    const $modelRender = $("#modelRender");
 
-    // clear
+    // submit listener
+    const $submit = $("#submit");
+    $submit.click(() => handleSubmitButton(event));
+
+    // clear listener
     const $clear = $("#clear");
     $clear.click(() => handleClearButton(event));
 
-    // Delete
-    $networks.on("click", "#deleteNetwork", () => {
+    // delete listener
+    $modelRender.on("click", "#deleteModel", () => {
         event.preventDefault();
-        handleDeleteButton(user, $networks[0]);
+        handleDeleteButton();
+    });
+
+    //run button listener
+    $modelRender.on("click", ".runButton", () => {
+        runModel(event, featureSettings);
     });
 
     //getting data from csv file
-    $("#network-form").on('change', '#csv', () => {
+    $("#modelRender-form").on('change', '#csv', () => {
         let file = event.target.files[0];
         let $name = $(".file-name");
         $name.html(file.name);
@@ -57,130 +65,26 @@ export const workPlaceRender = function (user) {
                         temp.input.push(arr[i]);
                     }
                     DATA.push(temp)
-                    //console.log(DATA)
                 });
             }
         })
     });
-
-    //Listener in run button
-    $networks.on("click", ".runButton", () => {
-        runModel(event, featureSettings);
-    });
 };
 
-//Clearing form
-export const handleClearButton = function (event) {
-    if (event != null) {
-        event.preventDefault();
-    }
-    const form = $("#network-form");
-    form[0]['title'].value = "";
-    document.getElementById("description").value = "";
-    let $name = $(".file-name");
-    $name.html("");
-};
-
-//Deleting model from firestore
-export const handleDeleteButton = function (user, network) {
-    event.preventDefault();
-    const $network = $(network);
-    $network.html("<div></div>");
-    handleClearButton(event);
-};
-
-//Running model
-export const runModel = function (event, featureSettings) {
-    event.preventDefault();
-    let myID = event.target.id;
-    let myFeatures = [];
-    let $myForm = $('#edit-form-' + myID)[0];
-    const user = $('#user_input')[0].value;
-    const checkAccuracy = $('#checkAccuracy')[0]['checked'];
-    const showVidTitles = $('#showVidTitles')[0]['checked'];
-    let numKFolds = $('#numKFolds')[0].value;
-
-    //Validating numKFolds input. Has to be greater or equal to 2
-    if ((numKFolds == null) || (numKFolds < 2)) {
-        numKFolds = 2;
-    }
-
-    //Validating myFeatures input
-    let allFalse = true;
-    for (let i = 0; i < featureSettings.length; i++) {
-        myFeatures.push($myForm['box' + i + ":" + myID]['checked']);
-        if (myFeatures[i] == true) {
-            allFalse = false;
-        }
-    }
-    //if all features set to false, then set all to true
-    if (allFalse) {
-        let newArr = [];
-        for (let i = 0; i < featureSettings.length; i++) {
-            newArr.push(true);
-        }
-        myFeatures = newArr;
-    }
-    //Sending settings to python
-    const settings = {
-        modelType: model,
-        checkAccuracy: checkAccuracy,
-        numKFolds: numKFolds,
-        showVidTitles: showVidTitles
-    }
-
-    console.log("User: " + user);
-    console.log("settings: ");
-    for (let key in settings) {
-        console.log(settings[key]);
-    }
-    console.log("Features: " + myFeatures);
-    console.log("Pass call to python file");
-}
-
-//Submitting new model
-export const handleSubmitButton = function (event, network) {
-    event.preventDefault();
-    event.stopPropagation();
-    handleClearButton(event);
-
-    const form = $("#network-form");
-    const title = form[0]['title'].value;
-    const description = form[0]['description'].value;
-    const fromDatabase = $('#fromDatabase')[0]['checked'];
-    const $network = $(network);
-    model = $('#model_input')[0].value;
-
-    //Pass data to python file
-    //TO-DO Check if user wants to upload his data from file
-    if (!fromDatabase) {
-        //TO-DO Send data to python and set data base        
-        $network.html(renderNetworksArea(title, description, model, featureSettings, pdict));
-    } else {
-        //Generate predefined features to select
-        users = ['abc123', 'cgb456', 'brc789', 'nsk579'];  //Look up in database
-        featureSettings = ['primary_category', 'sub_category', 'sub_sub_category', 'vid_user_watched_ratio', 'vid_avg_time_watched_ratio', 'vid_avg_interaction_span_days'];
-        pdict = "Watch time"
-        $network.html(renderNetworksArea(title, description, model, featureSettings, pdict));
-    }
-    //TO-DO Otherwise, upload features directly from database
-
-};
-
-//Loading content into DOM
-export const renderCreateNetworksArea = function () {
+//rendering form to choose model
+export const renderFormArea = function () {
 
     return `    
         <div id="columns" class="columns">    
-            <div id="neurons">
+            <div id="modelRender">
             </div>
         <div class="column">
             <div class="box">
-                <form id="network-form">                    
+                <form id="modelRender-form">                    
                     <div class="field">
                         <label class="label">Title</label>
                         <div class="control">
-                            <input id="title" class="input" type="text" placeholder="Enter title for your network" required/>
+                            <input id="title" class="input" type="text" placeholder="Enter title" required/>
                         </div>
                     </div>                   
 
@@ -202,7 +106,7 @@ export const renderCreateNetworksArea = function () {
                     <div class="field">
                         <label class="label">Short Description</label>
                         <div class="control">
-                            <textarea id="description" class="textarea" placeholder="Textarea"></textarea>
+                            <textarea id="description" class="textarea" placeholder="Enter your model description here"></textarea>
                         </div>
                     </div>                    
 
@@ -225,10 +129,10 @@ export const renderCreateNetworksArea = function () {
                     </br>
                     <div class="field">
                         <div class="control">
-                            <input type='checkbox' id="fromDatabase"/><label for="fromDatabase"></label> <label>Use data available on database (default)</label>
+                            <input type='checkbox' id="fromDatabase"/><label for="fromDatabase" class="checkbox"></label> <label class="checkbox">Use data available on database (default)</label>
                             <br>                          
                         </div>
-                    </div>   
+                    </div> 
                     </br>                                                       
 
                     <div class="field is-grouped">
@@ -252,44 +156,58 @@ export const renderCreateNetworksArea = function () {
             </div>
         </div>
     </div>
+    <div id="output">
+    </div>
     `;
 };
 
-export const renderFeatures = function (featureSettings, id) {
-
-    let result = ``;
-
-    let i = 0
-
-    featureSettings.forEach(elem => {
-        result += (`
-        <div class="columns is-mobile is-pulled-left">
-            <input id=${"box" + i + ":" + id} type='checkbox'/><label for=${"box" + i + ":" + id}></label><label>${elem}</label>                       
-        </div>
-        <br> 
-        `);
-        i++;
-    });
-
-    return result;
+//Clearing form
+export const handleClearButton = function (event) {
+    if (event != null) {
+        event.preventDefault();
+    }
+    const form = $("#modelRender-form");
+    form[0]['title'].value = "";
+    document.getElementById("description").value = "";
+    let $name = $(".file-name");
+    $name.html("");
+    $('#fromDatabase')[0]['checked'] = false;
+    featureSettings = [];
+    model = "";
 };
 
-export const renderUsersList = function (users) {
-    let result = ``;
+//Submitting new model
+export const handleSubmitButton = function (event) {
+    event.preventDefault();
+    event.stopPropagation();
 
-    //console.log($('#select'));
-    $('#select').empty();
+    const form = $("#modelRender-form");
+    const title = form[0]['title'].value;
+    const description = form[0]['description'].value;
+    const fromDatabase = $('#fromDatabase')[0]['checked'];
+    const $modelRender = $("#modelRender");
+    model = $('#model_input')[0].value;
 
-    users.forEach(elem => {
-        result += (`
-        <option> ${elem} </option>
-        `);
-    });
-    //console.log($('#select'));
-    return result;
+    //Pass data to python file
+    if ((!fromDatabase) && (featureSettings.length > 0)) {
+        //TO-DO Send data to python and add new data to database       
+        $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
+    } else if (fromDatabase) {
+        //TO-DO Otherwise, upload features directly from database
+        //Generate predefined features to select from data currently available in database
+        users = ['abc123', 'cgb456', 'brc789', 'nsk579'];  //Look up in database
+        featureSettings = ['primary_category', 'sub_category', 'sub_sub_category', 'vid_user_watched_ratio', 'vid_avg_time_watched_ratio', 'vid_avg_interaction_span_days'];
+        pdict = "Watch time"
+        $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
+    } else {
+        alert("Please, choose your data either from database, or upload a csv file");
+    }
+    //Clear form   
+    handleClearButton(event);
 };
 
-export const renderNetworksArea = function (title, description, model, featureSettings, pdict) {
+//rendering model area
+export const renderModelsArea = function (title, description, model, featureSettings, pdict) {
 
     let result = `    
     <div class="column is-full">
@@ -302,8 +220,7 @@ export const renderNetworksArea = function (title, description, model, featureSe
                 </header>
                 <div class="card-content">
                     <div class="content">
-                        <form id="edit-form-${1}">
-                        
+                        <form id="runModel-form">                        
                         <div>
                             <p class="card-header-title">
                                 <strong>Model: ${model}</strong>
@@ -313,7 +230,7 @@ export const renderNetworksArea = function (title, description, model, featureSe
                         <br>
                         <br>
                         <p><strong> Select features: </strong></p>  
-                        ${renderFeatures(featureSettings, 1)}
+                        ${renderFeatures(featureSettings)}
                         <br>
                         <div class="field">
                             <label class="label" id="user_label">Select a user</label>
@@ -343,7 +260,7 @@ export const renderNetworksArea = function (title, description, model, featureSe
                         <div class="field">
                             <label class="label" id="numKFolds_label">NumKFolds</label>
                             <div class="control">
-                                <input id="numKFolds" class="input" type="number" placeholder="2"/>
+                                <input id="numKFolds" class="input" type="number" placeholder="2" min="2" max="30"/>
                             </div>
                         </div>                                                  
                         </form>   
@@ -357,12 +274,162 @@ export const renderNetworksArea = function (title, description, model, featureSe
                     </div>
                 </div>
                 <footer class="card-footer">
-                    <a href="#" id="${1}" class="runButton card-footer-item">Run</a>               
-                    <a href="#" id="deleteNetwork" data-id="${1}" class="card-footer-item">Delete</a>
+                    <a href="#" class="runButton card-footer-item">Run</a>               
+                    <a href="#" id="deleteModel" class="card-footer-item">Delete</a>
                 </footer>
             </div>
         </div>
     </div>    
 `;
     return result;
+};
+
+//rendering features to select
+export const renderFeatures = function (featureSettings) {
+
+    let result = ``;
+
+    let i = 0
+
+    featureSettings.forEach(elem => {
+        result += (`
+        <div class="field">
+            <div class="control">
+                <input id=${"box" + i} type='checkbox'/><label for=${"box" + i}></label><label> ${elem} </label>
+                <br>                          
+            </div>
+        </div>
+        `);
+        i++;
+    });
+
+    return result;
+};
+
+//rendering users to select
+export const renderUsersList = function (users) {
+    let result = ``;
+
+    $('#select').empty();
+    users.forEach(elem => {
+        result += (`
+        <option> ${elem} </option>
+        `);
+    });
+
+    return result;
+};
+
+//Deleting model
+export const handleDeleteButton = function () {
+    event.preventDefault();
+    const $model = $("#modelRender");
+    const $output = $("#output");
+
+    $model.html("");
+    $output.html("");
+    handleClearButton(event);
+};
+
+//Running model
+export const runModel = function (event, featureSettings) {
+    event.preventDefault();
+    let myFeatures = [];
+    let $myForm = $('#runModel-form')[0];
+    const user = $('#user_input')[0].value;
+    const checkAccuracy = $('#checkAccuracy')[0]['checked'];
+    const showVidTitles = $('#showVidTitles')[0]['checked'];
+    let numKFolds = $('#numKFolds')[0].value;
+
+    //Validating numKFolds input. Has to be greater or equal to 2
+    if ((numKFolds == null) || (numKFolds < 2)) {
+        numKFolds = 2;
+    }
+
+    //Validating myFeatures input
+    let allFalse = true;
+    for (let i = 0; i < featureSettings.length; i++) {
+        myFeatures.push($myForm['box' + i]['checked']);
+        if (myFeatures[i] == true) {
+            allFalse = false;
+        }
+    }
+    //if all features set to false, then set all to true
+    if (allFalse) {
+        let newArr = [];
+        for (let i = 0; i < featureSettings.length; i++) {
+            newArr.push(true);
+        }
+        myFeatures = newArr;
+    }
+    //Sending settings to python
+    const settings = {
+        modelType: model,
+        checkAccuracy: checkAccuracy,
+        numKFolds: numKFolds,
+        showVidTitles: showVidTitles
+    }
+
+    console.log("User: " + user);
+    console.log("settings: ");
+    for (let key in settings) {
+        console.log(settings[key]);
+    }
+    console.log("Features: " + myFeatures);
+    console.log("Pass call to python file");
+
+    //made-up response    
+    let response = {
+        uid: user,
+        accuracy: 0.90,
+        truePositive: 0,
+        trueNegative: 0,
+        list: [["movie1", 0.98], ["movie2", 0.33], ["movie3", 0.99]]
+    }
+
+    //Rendering output area with backend response
+    const $output = $("#output");
+    $output.html(renderOutputArea(response));
+};
+
+//Rendering output area with backend response
+export const renderOutputArea = function (response) {
+    let result = ``;
+    let table = ``;
+
+    for (let key in response) {
+        if (key != "list") {
+            result += (`
+            <div class="level-item has-text-centered">
+                <div>
+                    <p class="heading">${key}</p>
+                    <p class="title">${response[key]}</p>
+                </div>
+            </div>
+        `);
+        }
+    }
+
+    response["list"].map((elmt) => {
+        table += (`<tr>`);
+        for (let i in elmt) {
+            table += (`         
+                <td>${elmt[i]}</td>            
+            `);
+        }
+        table += (`</tr>`);
+    });
+
+    return `
+        <div class="box">
+            <div class="level is-mobile">
+            ${result}            
+            </div>
+            <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">        
+                <tbody>
+                ${table} 
+                </tbody>
+            </table> 
+        </div>
+    `;
 };
