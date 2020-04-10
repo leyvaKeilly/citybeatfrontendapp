@@ -1,40 +1,8 @@
-import { handleSignupButton, handleLogoutButton, handleSigninButton, handleSigninWithGoogle } from "./auth.js";
-import { homeNavBarPublicRender, homeBodyPublicRender, homeNavBarPrivateRender } from "./home.js";
+import { homeNavBar, homeBody } from "./home.js";
 import { contactPageRender } from "./contact.js";
 import { workPlaceRender } from "./workSpace.js";
 
-export const renderPage = function (user, page) {
-
-    if (user) {
-        allUsersInfo(user, page);
-    } else {
-        publicInfo();
-    }
-};
-export const publicInfo = function () {
-    // setup materialize components
-    let modals = document.querySelectorAll('.modal');
-    M.Modal.init(modals);
-
-    let items = document.querySelectorAll('.collapsible');
-    M.Collapsible.init(items);
-
-    // signup
-    const $signupForm = $("#signup-form");
-    $signupForm.on("submit", handleSignupButton);
-
-    // login
-    const $loginForm = $('#login-form');
-    $loginForm.on("submit", handleSigninButton);
-
-    //login with google
-    $loginForm.on("click", "#googleSignIn", handleSigninWithGoogle);
-
-    const $body = $("#body");
-    $body.html(homeBodyPublicRender());
-};
-
-export const allUsersInfo = function (user, page) {
+export const renderPage = function (page) {
 
     // setup materialize components
     let modals = document.querySelectorAll('.modal');
@@ -42,44 +10,46 @@ export const allUsersInfo = function (user, page) {
 
     let items = document.querySelectorAll('.collapsible');
     M.Collapsible.init(items);
-
-    //log out
-    const $logout = $("#logout");
-    $logout.on("click", handleLogoutButton);
 
     //Setting work place page as default when rendering for first time
     if (page != -1) {
-        setPage(page, user);
+        setPage(page);
     }
 
-    //Contact page    
-    $("#contactPage").click(() => {
-        setPage(2, user);
+    //Home page
+    $("#home").click(() => {
+        setPage(1);
     });
 
     //Work place page
     $("#workPlace").click(() => {
-        setPage(3, user);
+        setPage(2);
+    });
+
+    //Contact page    
+    $("#contactPage").click(() => {
+        setPage(3);
     });
 };
 
-export const setPage = function (page, user) {
+export const setPage = function (page) {
     const $body = $("#body");
-    const $root = $("#root");
 
     switch (page) {
-        //Contact
-        case 2:
-            $root.html(homeNavBarPrivateRender());
-            $body.html(contactPageRender());
-            allUsersInfo(user, -1);
+        //Home
+        case 1:
+            $body.html(homeBody());
+            renderPage(-1);
             break;
-
         //Work place
+        case 2:
+            $body.html(workPlaceRender());
+            renderPage(-1);
+            break;
+        //Contact
         case 3:
-            $root.html(homeNavBarPrivateRender());
-            workPlaceRender(user);
-            allUsersInfo(user, -1);
+            $body.html(contactPageRender());
+            renderPage(-1);
             break;
     }
 };
@@ -88,18 +58,9 @@ export const loadPageIntoDOM = async function () {
 
     const $root = $("#root");
 
-    // listen for auth status changes
-    auth.onAuthStateChanged(user => {
-        //rendering page if user logged in
-        if (user) {
-            $root.html(homeNavBarPrivateRender());
-            renderPage(user, 3);
-        } else {
-            //rendering page if user logged out
-            $root.html(homeNavBarPublicRender());
-            renderPage();
-        }
-    });
+    //rendering home page
+    $root.html(homeNavBar());
+    renderPage(1);
 };
 /**
  * Use jQuery to execute the loadPageIntoDOM function after the page loads
