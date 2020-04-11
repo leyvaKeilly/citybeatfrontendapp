@@ -212,7 +212,7 @@ export const handleSubmitButton = async function (event) {
 function trainModel(userid, settings, data) {
     return axios({
         method: 'post',
-        url: 'https://boiling-journey-29127.herokuapp.com',
+        url: 'http://localhost:8000/',
         crossOrigin: true,
         data: {
             userid,
