@@ -208,10 +208,11 @@ export const handleSubmitButton = async function (event) {
     handleClearButton(event);
 };
 
+//AJAX function
 function trainModel(userid, settings, data) {
     return axios({
         method: 'post',
-        url: 'https://boiling-journey-29127.herokuapp.com/getA',
+        url: 'https://boiling-journey-29127.herokuapp.com',
         crossOrigin: true,
         data: {
             userid,
