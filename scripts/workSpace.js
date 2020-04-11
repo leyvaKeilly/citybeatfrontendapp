@@ -177,7 +177,7 @@ export const handleClearButton = function (event) {
 };
 
 //Submitting new model
-export const handleSubmitButton = function (event) {
+export const handleSubmitButton = async function (event) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -199,12 +199,27 @@ export const handleSubmitButton = function (event) {
         featureSettings = ['primary_category', 'sub_category', 'sub_sub_category', 'vid_user_watched_ratio', 'vid_avg_time_watched_ratio', 'vid_avg_interaction_span_days'];
         pdict = "Watch time"
         $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
+        const result = await trainModel(users[0], featureSettings, DATA);
+        console.log(result);
     } else {
         alert("Please, choose your data either from database, or upload a csv file");
     }
     //Clear form   
     handleClearButton(event);
 };
+
+function trainModel(userid, settings, data) {
+    return axios({
+        method: 'post',
+        url: 'https://boiling-journey-29127.herokuapp.com/getA',
+        crossOrigin: true,
+        data: {
+            userid,
+            settings,
+            data,
+        },
+    });
+}
 
 //rendering model area
 export const renderModelsArea = function (title, description, model, featureSettings, pdict) {
