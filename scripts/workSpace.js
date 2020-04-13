@@ -221,6 +221,7 @@ function trainModel(userid, settings, data) {
             settings,
             data,
         },
+        headers: { headers: { 'X-CSRFToken': csrftoken } }
     });
 }
 
