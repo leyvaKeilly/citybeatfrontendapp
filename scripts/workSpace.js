@@ -201,6 +201,8 @@ export const handleSubmitButton = async function (event) {
         $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
         const result = await trainModel(users[0], featureSettings, DATA);
         console.log(result);
+        console.log(result.data);
+        console.log(result.status);
     } else {
         alert("Please, choose your data either from database, or upload a csv file");
     }
@@ -214,6 +216,7 @@ function trainModel(userid, settings, data) {
         method: 'post',
         url: 'https://citybeatapp.herokuapp.com/',
         crossOrigin: true,
+        headers: { 'Access-Control-Allow-Origin': '*' },
         data: {
             userid,
             settings,
