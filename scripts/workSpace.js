@@ -200,7 +200,7 @@ export const handleSubmitButton = async function (event) {
         pdict = "Watch time"
         $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
         const result = await trainModel(users[0], featureSettings, DATA);
-        console.log(result);
+        //console.log(result);
         console.log(result.data);
         console.log(result.status);
     } else {
@@ -214,12 +214,8 @@ export const handleSubmitButton = async function (event) {
 function trainModel(userid, settings, data) {
     return axios({
         method: 'post',
-        url: 'https://citybeatapp.herokuapp.com/hello_world',
+        url: 'https://citybeatapp.herokuapp.com/',
         crossOrigin: true,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json'
-        },
         data: {
             userid,
             settings,
