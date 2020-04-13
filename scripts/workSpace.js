@@ -216,7 +216,10 @@ function trainModel(userid, settings, data) {
         method: 'post',
         url: 'https://citybeatapp.herokuapp.com/hello_world',
         crossOrigin: true,
-        header: { "Access-Control-Allow-Origin": '*' },
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+        },
         data: {
             userid,
             settings,
