@@ -1,3 +1,6 @@
+axios.defaults.xsrfHeaderName = "X_CSRFTOKEN";
+axios.defaults.xsrfCookieName = "csrftoken";
+
 let pdict = "";
 let model = "";
 let users = [];
@@ -221,7 +224,7 @@ function trainModel(userid, settings, data) {
             settings,
             data,
         },
-        headers: { headers: { 'X-CSRFToken': csrftoken } }
+        headers: { 'X-CSRFToken': csrftoken }
     });
 }
 
