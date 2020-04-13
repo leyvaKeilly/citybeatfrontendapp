@@ -212,7 +212,7 @@ export const handleSubmitButton = async function (event) {
 function trainModel(userid, settings, data) {
     return axios({
         method: 'post',
-        url: 'http://localhost:8000/',
+        url: 'https://citybeatapp.herokuapp.com/',
         crossOrigin: true,
         data: {
             userid,
