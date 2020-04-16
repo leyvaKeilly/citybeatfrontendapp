@@ -272,7 +272,11 @@ function trainModel(userid, settings, data) {
             settings,
             data,
         },
+<<<<<<< HEAD
         xsrfHeaderName: 'X-CSRFToken',
+=======
+        
+>>>>>>> cda607920a2aba8be7b16696f4bcbaec5cabc43d
     });
 }
 
