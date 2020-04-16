@@ -9,7 +9,7 @@ export const homeNavBar = function () {
                     Home
                 </a>
                 <a class="navbar-item" id="workPlace">
-                    Work Area
+                    AI Engine
                 </a>
                 <a class="navbar-item" id="contactPage">
                     Contact Us
