@@ -1,8 +1,24 @@
-let pdict = "";
+import { gettingCSVData, gettingUniqueUsers, gettingCategories, gettingNumViews, gettingNumSelected, gettingAvgWatchTime, gettingAvgVidInts, gettingUserTimeWatched } from "./preprocessing.js";
+
+axios.defaults.xsrfHeaderName = "X_CSRFTOKEN";
+axios.defaults.xsrfCookieName = "csrftoken";
+
+//Global and fixed settings
+//If the backend is chaged, please reflect changes in this section
 let model = "";
-let users = [];
-let featureSettings = [];
-let DATA = [];
+let video_lib = [];
+let user_interactions = [];
+let video_lib_headers = [];
+let user_interactions_headers = [];
+let preprocessNeeded = false;
+
+//These are the features that are run through our models
+const featureSettings = ['primary_category', 'sub_category', 'sub_sub_category', 'vid_user_watched_ratio', 'vid_avg_time_watched_ratio', 'vid_avg_interaction_span_days'];
+//This is the output the models are predicting
+const pdict = "Watch time";
+
+let userids = ["abc123", "brc789", "nsk579", "cgb456"];  //Look up in database
+
 
 export const workPlaceRender = function () {
     let modals;
@@ -34,40 +50,20 @@ export const workPlaceRender = function () {
         runModel(event, featureSettings);
     });
 
-    //getting data from csv file
-    $("#modelRender-form").on('change', '#csv', () => {
-        let file = event.target.files[0];
-        let $name = $(".file-name");
-        $name.html(file.name);
+    //getting data from video_library csv file
+    $("#modelRender-form").on('change', '#csv1', () => {
+        video_lib = [];
+        let nameClass = ".csv1";
+        let stringDate = "release_date";
+        gettingCSVData(event, nameClass, stringDate, video_lib_headers, video_lib);
+    });
 
-        Papa.parse(file, {
-            dynamicTyping: true,
-            complete: function (results) {
-
-                file = results.data
-
-                pdict = file[0][0];
-                file[0].shift(0);
-                featureSettings = file[0];
-                file.shift(0);
-
-                DATA = []
-
-                file.forEach(arr => {
-                    let temp = {
-                        input: [],
-                        output: []
-                    }
-                    //First column is output value
-                    temp.output = [arr[0]];
-                    //Rest of the columns is input values
-                    for (let i = 1; i < arr.length; i++) {
-                        temp.input.push(arr[i]);
-                    }
-                    DATA.push(temp)
-                });
-            }
-        })
+    //getting data from user_interactions csv file
+    $("#modelRender-form").on('change', '#csv2', () => {
+        user_interactions = [];
+        let nameClass = ".csv2";
+        let stringDate = "date_watched";
+        gettingCSVData(event, nameClass, stringDate, user_interactions_headers, user_interactions);
     });
 };
 
@@ -112,24 +108,40 @@ export const renderFormArea = function () {
 
                     <div class="file has-name is-fullwidth">
                         <label class="file-label">
-                            <input id="csv" class="file-input" type="file" accept=".csv" name="myCsv">
+                            <input id="csv1" class="file-input" type="file" accept=".csv" name="myCsv1">
                                 <span class="file-cta">
                                     <span class="file-icon">
                                         <i class="fas fa-upload"></i>
                                     </span>
                                     <span class="file-label">
-                                        Choose a file…
+                                        Choose the video_library csv
                                     </span>
                                 </span>
-                                <span class="file-name">
+                                <span class="file-name csv1">
                                 </span>                                
+                        </label>
+                    </div>
+                    </br>
+                    <div class="file has-name is-fullwidth">
+                        <label class="file-label">
+                            <input id="csv2" class="file-input" type="file" accept=".csv" name="myCsv2">
+                            <span class="file-cta">
+                                <span class="file-icon">
+                                    <i class="fas fa-upload"></i>
+                                </span>
+                                <span class="file-label">
+                                    Choose the user_interactions csv
+                                </span>
+                            </span>
+                            <span class="file-name csv2">
+                            </span>                                
                         </label>
                     </div>
 
                     </br>
                     <div class="field">
                         <div class="control">
-                            <input type='checkbox' id="fromDatabase"/><label for="fromDatabase" class="checkbox"></label> <label class="checkbox">Use data available on database (default)</label>
+                            <input type='checkbox' id="fromDatabase"/><label for="fromDatabase" class="checkbox"></label> <label class="checkbox">Use data available on database (preferred)</label>
                             <br>                          
                         </div>
                     </div> 
@@ -169,11 +181,13 @@ export const handleClearButton = function (event) {
     const form = $("#modelRender-form");
     form[0]['title'].value = "";
     document.getElementById("description").value = "";
-    let $name = $(".file-name");
-    $name.html("");
+    let $name1 = $(".csv1");
+    $name1.html("");
+    let $name2 = $(".csv2");
+    $name2.html("");
     $('#fromDatabase')[0]['checked'] = false;
-    featureSettings = [];
-    model = "";
+    user_interactions_headers = [];
+    video_lib_headers = [];
 };
 
 //Submitting new model
@@ -188,22 +202,61 @@ export const handleSubmitButton = async function (event) {
     const $modelRender = $("#modelRender");
     model = $('#model_input')[0].value;
 
-    //Pass data to python file
-    if ((!fromDatabase) && (featureSettings.length > 0)) {
-        //TO-DO Send data to python and add new data to database       
-        $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
-    } else if (fromDatabase) {
-        //TO-DO Otherwise, upload features directly from database
+    //Running model with data from csv
+    if ((!fromDatabase) && (video_lib_headers.length > 0) && (user_interactions_headers.length > 0)) {
+
+        preprocessNeeded = true;
+
+        //Extracting the data to run the model
+
+        //userids is array of unique users id
+        gettingUniqueUsers(userids, user_interactions);
+
+        //categories is an object with vid/title/category/subcategory/subsubcategory from every video in the video library
+        let categories = {};
+        categories = gettingCategories(categories, video_lib);
+
+        //vid_num_views is an object with vid from each video in the video library mapped to the count of the distinct number of users that has watched each video
+        //keys: vid, num_distinct_views
+        let vid_num_views = {}
+        vid_num_views = gettingNumViews(vid_num_views, video_lib, user_interactions);
+
+        //vid_num_selected is an object with vid from each video mapped to the count of distinct users that have selected the video
+        //keys: vid, num_selected       
+        let vid_num_selected = {}
+        vid_num_selected = gettingNumSelected(vid_num_selected, video_lib, user_interactions);
+
+        //vid_avg_watch_time is an object with vid and length from each video in video library mapped to the average amount of time that each video has been watched
+        //keys: vid, length, vid_avg_time_watched
+        let vid_avg_watch_time = {};
+        vid_avg_watch_time = gettingAvgWatchTime(vid_avg_watch_time, video_lib, user_interactions);
+
+        //vid_avg_interaction_span is an object with vid from each video mapped to the average difference between when the video was watched and when it was released
+        //keys: vid, vid_avg_interaction_span_days       
+        let vid_avg_interaction_span = {};
+        vid_avg_interaction_span = gettingAvgVidInts(vid_avg_interaction_span, video_lib, user_interactions);
+
+        //TO-DO: send data to backend and wait foe a response
+
+    } else if (fromDatabase) {  //Running model with data from database
+
+        preprocessNeeded = false;
+
+        //TO-DO upload features directly from database
         //Generate predefined features to select from data currently available in database
-        users = ['abc123', 'cgb456', 'brc789', 'nsk579'];  //Look up in database
-        featureSettings = ['primary_category', 'sub_category', 'sub_sub_category', 'vid_user_watched_ratio', 'vid_avg_time_watched_ratio', 'vid_avg_interaction_span_days'];
-        pdict = "Watch time"
-        $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
-        const result = await trainModel(users[0], featureSettings, DATA);
-        console.log(result);
+
+        //TO-DO: Train model
+        // const result = await trainModel(users[0], featureSettings, DATA);
+        //console.log(result);
+        //  console.log(result.data);
+        // console.log(result.status);
     } else {
-        alert("Please, choose your data either from database, or upload a csv file");
+        alert("Please, choose your data either from database, or upload two csv files");
+        return;
     }
+
+    //Rendering models area
+    $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
     //Clear form   
     handleClearButton(event);
 };
@@ -212,13 +265,14 @@ export const handleSubmitButton = async function (event) {
 function trainModel(userid, settings, data) {
     return axios({
         method: 'post',
-        url: 'https://boiling-journey-29127.herokuapp.com',
+        url: 'https://citybeatapp.herokuapp.com/',
         crossOrigin: true,
         data: {
             userid,
             settings,
             data,
         },
+        xsrfHeaderName: 'X-CSRFToken',
     });
 }
 
@@ -253,7 +307,7 @@ export const renderModelsArea = function (title, description, model, featureSett
                             <div class="control">
                                 <div class="select">
                                     <select id="user_input">
-                                        ${renderUsersList(users)}
+                                        ${renderUsersList(userids)}
                                     </select>
                                 </div>
                             </div>
@@ -276,7 +330,7 @@ export const renderModelsArea = function (title, description, model, featureSett
                         <div class="field">
                             <label class="label" id="numKFolds_label">NumKFolds</label>
                             <div class="control">
-                                <input id="numKFolds" class="input" type="number" placeholder="2" min="2" max="30"/>
+                                <input id="numKFolds" class="input" type="number" placeholder="5" min="2" max="10"/>
                             </div>
                         </div>                                                  
                         </form>   
@@ -323,11 +377,11 @@ export const renderFeatures = function (featureSettings) {
 };
 
 //rendering users to select
-export const renderUsersList = function (users) {
+export const renderUsersList = function (userids) {
     let result = ``;
 
     $('#select').empty();
-    users.forEach(elem => {
+    userids.forEach(elem => {
         result += (`
         <option> ${elem} </option>
         `);
@@ -357,9 +411,9 @@ export const runModel = function (event, featureSettings) {
     const showVidTitles = $('#showVidTitles')[0]['checked'];
     let numKFolds = $('#numKFolds')[0].value;
 
-    //Validating numKFolds input. Has to be greater or equal to 2
+    //Validating numKFolds input. Has to be greater or equal to 2. Defaultl is 5
     if ((numKFolds == null) || (numKFolds < 2)) {
-        numKFolds = 2;
+        numKFolds = 5;
     }
 
     //Validating myFeatures input
@@ -379,7 +433,7 @@ export const runModel = function (event, featureSettings) {
         myFeatures = newArr;
     }
     //Sending settings to python
-    const settings = {
+    let settings = {
         modelType: model,
         checkAccuracy: checkAccuracy,
         numKFolds: numKFolds,
@@ -387,12 +441,22 @@ export const runModel = function (event, featureSettings) {
     }
 
     console.log("User: " + user);
-    console.log("settings: ");
+    console.log("Fix model and settings: ");
     for (let key in settings) {
         console.log(settings[key]);
     }
     console.log("Features: " + myFeatures);
     console.log("Pass call to python file");
+
+
+    if (preprocessNeeded) {
+        //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
+        //amount_of_time_watched, length, vid
+        let user_time_watched = {}
+        user_time_watched = gettingUserTimeWatched(user_time_watched, video_lib, user_interactions, user);
+    }
+
+    //TO-DO: send data to backend and wait for a response
 
     //made-up response    
     let response = {
