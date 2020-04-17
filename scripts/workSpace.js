@@ -245,11 +245,6 @@ export const handleSubmitButton = async function (event) {
         //TO-DO upload features directly from database
         //Generate predefined features to select from data currently available in database
 
-        //TO-DO: Train model
-        // const result = await trainModel(users[0], featureSettings, DATA);
-        //console.log(result);
-        //  console.log(result.data);
-        // console.log(result.status);
     } else {
         alert("Please, choose your data either from database, or upload two csv files");
         return;
@@ -260,20 +255,6 @@ export const handleSubmitButton = async function (event) {
     //Clear form   
     handleClearButton(event);
 };
-
-//AJAX function
-function trainModel(userid, settings, data) {
-    return axios({
-        method: 'post',
-        url: 'https://citybeatapp.herokuapp.com/',
-        crossOrigin: true,
-        data: {
-            userid,
-            settings,
-            data,
-        },
-    });
-}
 
 //rendering model area
 export const renderModelsArea = function (title, description, model, featureSettings, pdict) {
@@ -401,7 +382,7 @@ export const handleDeleteButton = function () {
 };
 
 //Running model
-export const runModel = function (event, featureSettings) {
+export const runModel = async function (event, featureSettings) {
     event.preventDefault();
     let myFeatures = [];
     let $myForm = $('#runModel-form')[0];
@@ -456,6 +437,11 @@ export const runModel = function (event, featureSettings) {
     }
 
     //TO-DO: send data to backend and wait for a response
+    //TO-DO: Train model
+    const result = await trainModel(userids[0], featureSettings, settings);
+    console.log(result);
+    console.log(result.data);
+    console.log(result.status);
 
     //made-up response    
     let response = {
@@ -470,6 +456,20 @@ export const runModel = function (event, featureSettings) {
     const $output = $("#output");
     $output.html(renderOutputArea(response));
 };
+
+//AJAX function
+function trainModel(userid, settings, data) {
+    return axios({
+        method: 'post',
+        url: 'https://citybeatapp.herokuapp.com/',
+        crossOrigin: true,
+        data: {
+            userid,
+            settings,
+            data,
+        },
+    });
+}
 
 //Rendering output area with backend response
 export const renderOutputArea = function (response) {
