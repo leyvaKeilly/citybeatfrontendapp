@@ -492,7 +492,7 @@ export const runModel = async function (event, featureSettings) {
 function trainModel(user, featureSettings, settings, data) {
     return axios({
         method: 'post',
-        url: 'http://localhost:8000/',
+        url: 'https://citybeatapp.herokuapp.com/',
         crossOrigin: true,
         data: {
             user,
