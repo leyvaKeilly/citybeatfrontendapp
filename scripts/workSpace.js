@@ -181,7 +181,7 @@ export const handleSubmitButton = async function (event) {
         //Extracting the data to run the model
 
         //userids is array of unique users id
-        gettingUniqueUsers(userids, user_interactions);
+        userids = gettingUniqueUsers(userids, user_interactions);
         data.push(userids);
 
         //categories is an object with vid/title/category/subcategory/subsubcategory from every video in the video library
@@ -226,7 +226,7 @@ export const handleSubmitButton = async function (event) {
         alert("Please, choose your data either from database, or upload two csv files");
         return;
     }
-
+    console.log(userids)
     //Rendering models area
     $modelRender.html(renderModelsArea(featureSettings, pdict, userids));
     //Clear form   
@@ -468,8 +468,8 @@ export const runModel = async function (event, featureSettings) {
 
         if (accuracyOption == "F1Scores") {
 
-            //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
-            //amount_of_time_watched, length, vid
+            // //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
+            // //amount_of_time_watched, length, vid
             let user_time_watched = {}
             user_time_watched = gettingUserTimeWatched(user_time_watched, video_lib, user_interactions, user);
 
@@ -479,6 +479,7 @@ export const runModel = async function (event, featureSettings) {
 
     //TO_DO TRY AND CATCH HERE
     //Train model with featureSettings, settings, data
+    console.log(data)
     const result = await trainModel(user, fSettings, settings, data);
     console.log(result.data);
 
@@ -491,7 +492,7 @@ export const runModel = async function (event, featureSettings) {
 function trainModel(user, featureSettings, settings, data) {
     return axios({
         method: 'post',
-        url: 'http://localhost:8000/',
+        url: 'https://citybeatapp.herokuapp.com/',
         crossOrigin: true,
         data: {
             user,
