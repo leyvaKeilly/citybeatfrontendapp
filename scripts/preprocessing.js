@@ -51,7 +51,7 @@ export const gettingCSVData = function (event, nameClass, stringDate, header_arr
 //creating array of unique users id
 export const gettingUniqueUsers = function (userids, user_interactions) {
     userids = user_interactions.map(i => i.uid).filter((elemt, i, all) => all.indexOf(elemt) == i);
-    return;
+    return userids;
 };
 
 //categories is an object with vid/title/category/subcategory/subsubcategory from every video in the video library
@@ -79,7 +79,6 @@ export const gettingNumViews = function (vid_num_views, video_lib, user_interact
     });
     return vid_num_views;
 };
-
 
 //vid_num_selected is an object with vid from each video mapped to the count of distinct users that have selected the video
 //keys: vid, num_selected  

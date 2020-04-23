@@ -384,25 +384,22 @@ def aimodel(uid, settings, featureSettings, data):
                 fn = round(final_conf_matrix[1][0]/sample_size, 2)
                 return({'f1score': f1score, 'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn})
 
-    if settings['nUserF1Scores'] is True:
+    if settings['nUserF1Scores'] and data is None:
         output = {'f1score': 0, 'tp': 0, 'fp': 0, 'tn': 0, 'fn': 0, 'nusers': 0, 'data':[]}
         userIDs = None
         engine = None
-        if settings['usePSQL'] is False:
-            userIDs = pd.DataFrame(data[0], columns=['uid'])
-        else:
-            dbusername = 'postgres'
-            password = 'kcjkcj89'
-            host = '127.0.0.1'
-            port = '5432'
-            database = 'AIData'
+        dbusername = 'postgres'
+        password = 'kcjkcj89'
+        host = '127.0.0.1'
+        port = '5432'
+        database = 'AIData'
 
-            engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
-                                   .format(user=dbusername,
-                                           pw=password,
-                                           db=database))
-            
-            userIDs = pd.read_sql_query(sql_uids,con=engine)
+        engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
+                                .format(user=dbusername,
+                                        pw=password,
+                                        db=database))
+        
+        userIDs = pd.read_sql_query(sql_uids,con=engine)
             
         n_Users = int(userIDs.shape[0]*settings['nUserFraction'])
         if n_Users == 0:
@@ -423,34 +420,24 @@ def aimodel(uid, settings, featureSettings, data):
             vid_avg_time_watched = None
             vid_avg_interaction_span = None
 
-            if settings['usePSQL'] is False:
-                user_time_watched_ratio = pd.DataFrame.from_dict(data[6])
-                categories = pd.DataFrame.from_dict(data[1])
-                vid_num_views = pd.DataFrame.from_dict(data[2])
-                vid_num_selected = pd.DataFrame.from_dict(data[3])
-                vid_avg_time_watched = pd.DataFrame.from_dict(data[4])
-                vid_avg_interaction_span = pd.DataFrame.from_dict(data[5])
-            else:
+            sql_user_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
+            from userinteractions, videolibrary, userinfo 
+            where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
+            and userinfo.uid = '{uid}'""".format(uid=uid)
 
-                sql_user_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
-                from userinteractions, videolibrary, userinfo 
-                where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
-                and userinfo.uid = '{uid}'""".format(uid=uid)
-
-                user_time_watched_ratio = pd.read_sql_query(sql_user_time_watched,con=engine)
-                categories = pd.read_sql_query(sql_categories,con=engine)
-                vid_num_views = pd.read_sql_query(sql_vid_num_views,con=engine)
-                vid_num_selected = pd.read_sql_query(sql_vid_num_selected,con=engine)
-                vid_avg_time_watched = pd.read_sql_query(sql_vid_avg_time_watched,con=engine)
-                vid_avg_interaction_span = pd.read_sql_query(sql_vid_avg_interaction_span,con=engine)
-                vid_avg_interaction_span['vid_avg_interaction_span_days'] = vid_avg_interaction_span['vid_avg_interaction_span_days'].apply(stripdays)
+            user_time_watched_ratio = pd.read_sql_query(sql_user_time_watched,con=engine)
+            categories = pd.read_sql_query(sql_categories,con=engine)
+            vid_num_views = pd.read_sql_query(sql_vid_num_views,con=engine)
+            vid_num_selected = pd.read_sql_query(sql_vid_num_selected,con=engine)
+            vid_avg_time_watched = pd.read_sql_query(sql_vid_avg_time_watched,con=engine)
+            vid_avg_interaction_span = pd.read_sql_query(sql_vid_avg_interaction_span,con=engine)
+            vid_avg_interaction_span['vid_avg_interaction_span_days'] = vid_avg_interaction_span['vid_avg_interaction_span_days'].apply(stripdays)
 
 
             # integer value of number of users. used in later calculations
             num_users = len(userIDs)
 
-            # table of the video ids that the specified user has watched/skipped
-            user_time_watched_ratio = pd.DataFrame.from_dict(data[6])
+
 
             user_time_watched_ratio['if_watched'] = np.where(
                 user_time_watched_ratio['amount_of_time_watched']/user_time_watched_ratio['length'] > .75, 1, 0)
@@ -616,7 +603,7 @@ def aimodel(uid, settings, featureSettings, data):
         vid_avg_time_watched = None
         vid_avg_interaction_span = None
         
-        if settings['usePSQL'] is False:
+        if data is not None:
             userIDs = pd.DataFrame(data[0], columns=['uid'])
             user_time_watched_ratio = pd.DataFrame.from_dict(data[6])
             categories = pd.DataFrame.from_dict(data[1])
