@@ -68,30 +68,40 @@ export const gettingCategories = function (categories, video_lib) {
 //keys: vid, num_distinct_views
 export const gettingNumViews = function (vid_num_views, video_lib, user_interactions) {
 
+    vid_num_views['vid'] = [];
+    vid_num_views['num_distinct_views'] = [];
+
     video_lib.forEach(i => {
+        vid_num_views['vid'].push(i['vid']);
         //matching each video in the library with the users interactions, and discarding repeted interactions from the same user
         let arr = user_interactions.filter((row) => (row.vid == i.vid)).map(row => row.uid).filter((user, index, all) => all.indexOf(user) == index);
-        vid_num_views[i.vid] = arr.length;
+        vid_num_views['num_distinct_views'].push(arr.length);
     });
-
     return vid_num_views;
 };
+
 
 //vid_num_selected is an object with vid from each video mapped to the count of distinct users that have selected the video
 //keys: vid, num_selected  
 export const gettingNumSelected = function (vid_num_selected, video_lib, user_interactions) {
+    vid_num_selected['vid'] = [];
+    vid_num_selected['num_selected'] = [];
+
     video_lib.forEach(i => {
+        vid_num_selected['vid'].push(i['vid']);
         //matching each video in the library with the users interactions if the users selected the video, and discarding repeted interactions from the same user
         let arr = user_interactions.filter((row) => ((row.vid == i.vid) && (row.vid_num_selected == 1))).map(row => row.uid).filter((user, index, all) => all.indexOf(user) == index);
-        vid_num_selected[i.vid] = arr.length;
+        vid_num_selected['num_selected'].push(arr.length);
     });
-
     return vid_num_selected;
 };
 
 //vid_avg_watch_time is an object with vid and length from each video in video library mapped to the average amount of time that each video has been watched
 //keys: vid, length, vid_avg_time_watched
 export const gettingAvgWatchTime = function (vid_avg_watch_time, video_lib, user_interactions) {
+    vid_avg_watch_time['vid'] = [];
+    vid_avg_watch_time['length'] = [];
+    vid_avg_watch_time['vid_avg_time_watched'] = [];
     let sum = 0;
     let avg = 0;
 
@@ -105,17 +115,19 @@ export const gettingAvgWatchTime = function (vid_avg_watch_time, video_lib, user
             arr.forEach(elem => sum += elem);
             avg = (sum / arr.length);
         }
-        vid_avg_watch_time[i.vid] = {
-            length: i.length,
-            vid_avg_time_watched: avg
-        }
+        vid_avg_watch_time['vid'].push(i.vid);
+        vid_avg_watch_time['length'].push(i.length);
+        vid_avg_watch_time['vid_avg_time_watched'].push(avg);
     });
     return vid_avg_watch_time;
+
 };
 
 //vid_avg_interaction_span is an object with vid from each video mapped to the average difference between when the video was watched and when it was released
 //keys: vid, vid_avg_interaction_span_days
 export const gettingAvgVidInts = function (vid_avg_interaction_span, video_lib, user_interactions) {
+    vid_avg_interaction_span['vid'] = [];
+    vid_avg_interaction_span['vid_avg_interaction_span_days'] = [];
     let avgSpan = 0;
     let sum = 0;
 
@@ -131,8 +143,10 @@ export const gettingAvgVidInts = function (vid_avg_interaction_span, video_lib, 
             //calculating the average of the difference between the date the video was released and when it was watched, if it was watched 
             avgSpan = (sum / arr.length);
         }
-        vid_avg_interaction_span[i.vid] = avgSpan;
+        vid_avg_interaction_span['vid'].push(i.vid);
+        vid_avg_interaction_span['vid_avg_interaction_span_days'].push(avgSpan / (1000 * 60 * 60 * 24));
     });
+    console.log(vid_avg_interaction_span)
 
     return vid_avg_interaction_span;
 };

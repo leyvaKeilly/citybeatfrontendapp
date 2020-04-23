@@ -11,6 +11,7 @@ let user_interactions = [];
 let video_lib_headers = [];
 let user_interactions_headers = [];
 let preprocessNeeded = false;
+let data = [];
 
 //These are the features that are run through our models
 const featureSettings = ['primary_category', 'sub_category', 'sub_sub_category', 'vid_user_watched_ratio', 'vid_avg_time_watched_ratio', 'vid_avg_interaction_span_days'];
@@ -211,32 +212,36 @@ export const handleSubmitButton = async function (event) {
 
         //userids is array of unique users id
         gettingUniqueUsers(userids, user_interactions);
+        data.push(userids);
 
         //categories is an object with vid/title/category/subcategory/subsubcategory from every video in the video library
         let categories = {};
         categories = gettingCategories(categories, video_lib);
+        data.push(categories);
 
         //vid_num_views is an object with vid from each video in the video library mapped to the count of the distinct number of users that has watched each video
         //keys: vid, num_distinct_views
         let vid_num_views = {}
         vid_num_views = gettingNumViews(vid_num_views, video_lib, user_interactions);
+        data.push(vid_num_views);
 
         //vid_num_selected is an object with vid from each video mapped to the count of distinct users that have selected the video
         //keys: vid, num_selected       
         let vid_num_selected = {}
         vid_num_selected = gettingNumSelected(vid_num_selected, video_lib, user_interactions);
+        data.push(vid_num_selected);
 
         //vid_avg_watch_time is an object with vid and length from each video in video library mapped to the average amount of time that each video has been watched
         //keys: vid, length, vid_avg_time_watched
         let vid_avg_watch_time = {};
         vid_avg_watch_time = gettingAvgWatchTime(vid_avg_watch_time, video_lib, user_interactions);
+        data.push(vid_avg_watch_time);
 
         //vid_avg_interaction_span is an object with vid from each video mapped to the average difference between when the video was watched and when it was released
         //keys: vid, vid_avg_interaction_span_days       
         let vid_avg_interaction_span = {};
         vid_avg_interaction_span = gettingAvgVidInts(vid_avg_interaction_span, video_lib, user_interactions);
-
-        //TO-DO: send data to backend and wait foe a response
+        data.push(vid_avg_interaction_span);
 
     } else if (fromDatabase) {  //Running model with data from database
 
@@ -412,12 +417,19 @@ export const runModel = async function (event, featureSettings) {
         }
         myFeatures = newArr;
     }
+    let fSettings = {};
+    featureSettings.forEach((feature, i) => {
+        fSettings[feature] = myFeatures[i];
+    })
+
     //Sending settings to python
     let settings = {
         modelType: model,
-        checkAccuracy: checkAccuracy,
+        checkF1Scores: checkAccuracy, //no aparecera si esta seleccionado nUserF1scores & viceversa
         numKFolds: numKFolds,
-        showVidTitles: showVidTitles
+        showVidTitles: showVidTitles, //no aparecera si esta seleccionado nUserF1scores
+        nUserF1Scores: false,
+        nUserFraction: 0.66         //only if nuserF1scores is true
     }
 
     console.log("User: " + user);
@@ -434,39 +446,52 @@ export const runModel = async function (event, featureSettings) {
         //amount_of_time_watched, length, vid
         let user_time_watched = {}
         user_time_watched = gettingUserTimeWatched(user_time_watched, video_lib, user_interactions, user);
+
+        data.push(user_time_watched);
+
+        //TO-DO: send data to backend and wait for a response
+        //TO-DO: Train model
+        const result = await trainModel(user, fSettings, settings, data);
+        // console.log(result);
+        console.log(result.data);
+        // console.log(result.data.featureSettings);
+        // console.log(result.data.settings);
+        // console.log(result.data.data);
+
     }
 
     //TO-DO: send data to backend and wait for a response
     //TO-DO: Train model
-    const result = await trainModel(userids[0], featureSettings, settings);
-    console.log(result);
-    console.log(result.data);
-    console.log(result.status);
+    // const result = await trainModel(user, featureSettings, settings, data);
+    // console.log(result);
+    // console.log(result.data);
+    // console.log(result.status);
 
     //made-up response    
-    let response = {
-        uid: user,
-        accuracy: 0.90,
-        truePositive: 0,
-        trueNegative: 0,
-        list: [["movie1", 0.98], ["movie2", 0.33], ["movie3", 0.99]]
-    }
+    // let response = {
+    //     uid: user,
+    //     accuracy: 0.90,
+    //     truePositive: 0,
+    //     trueNegative: 0,
+    //     list: [["movie1", 0.98], ["movie2", 0.33], ["movie3", 0.99]]
+    // }
 
     //Rendering output area with backend response
     const $output = $("#output");
-    $output.html(renderOutputArea(response));
+    // $output.html(renderOutputArea(response));
 };
 
 //AJAX function
-function trainModel(userid, settings, data) {
+function trainModel(user, featureSettings, settings, data) {
     return axios({
         method: 'post',
-        url: 'https://citybeatapp.herokuapp.com/',
+        url: 'http://localhost:8000/',
         crossOrigin: true,
         data: {
-            userid,
+            user,
+            featureSettings,
             settings,
-            data,
+            data
         },
     });
 }
