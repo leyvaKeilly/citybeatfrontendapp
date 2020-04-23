@@ -1,24 +1,19 @@
 import { gettingCSVData, gettingUniqueUsers, gettingCategories, gettingNumViews, gettingNumSelected, gettingAvgWatchTime, gettingAvgVidInts, gettingUserTimeWatched } from "./preprocessing.js";
 
-axios.defaults.xsrfHeaderName = "X_CSRFTOKEN";
-axios.defaults.xsrfCookieName = "csrftoken";
-
 //Global and fixed settings
 //If the backend is chaged, please reflect changes in this section
-let model = "";
 let video_lib = [];
 let user_interactions = [];
 let video_lib_headers = [];
 let user_interactions_headers = [];
 let preprocessNeeded = false;
 let data = [];
+let userids = [];
 
 //These are the features that are run through our models
 const featureSettings = ['primary_category', 'sub_category', 'sub_sub_category', 'vid_user_watched_ratio', 'vid_avg_time_watched_ratio', 'vid_avg_interaction_span_days'];
 //This is the output the models are predicting
 const pdict = "Watch time";
-
-let userids = ["abc123", "brc789", "nsk579", "cgb456"];  //Look up in database
 
 
 export const workPlaceRender = function () {
@@ -51,6 +46,13 @@ export const workPlaceRender = function () {
         runModel(event, featureSettings);
     });
 
+    //renderAccuracyFollowUp listener
+    $modelRender.on("change", "#checkAccuracy", () => {
+        const $accuracyDiv = $("#accuracyFollowUp");
+        $accuracyDiv.html(renderAccuracyFollowUp(event.target.value));
+    });
+
+    //TO_DO: try and catch
     //getting data from video_library csv file
     $("#modelRender-form").on('change', '#csv1', () => {
         video_lib = [];
@@ -79,34 +81,8 @@ export const renderFormArea = function () {
             <div class="box">
                 <form id="modelRender-form">                    
                     <div class="field">
-                        <label class="label">Title</label>
-                        <div class="control">
-                            <input id="title" class="input" type="text" placeholder="Enter title" required/>
-                        </div>
-                    </div>                   
-
-                    <div class="field">
-                        <label class="label" id="model_label" >Select a model</label>
-                        <div class="control">
-                            <div class="select">
-                                <select id="model_input">
-                                    <option>logreg</option>
-                                    <option>multilogreg</option>
-                                    <option>knn</option>
-                                    <option>xgboost</option>
-                                    <option>mlp</option>
-                                </select>
-                            </div>
-                        </div>
+                        <label class="label">Select data</label>
                     </div>
-                   
-                    <div class="field">
-                        <label class="label">Short Description</label>
-                        <div class="control">
-                            <textarea id="description" class="textarea" placeholder="Enter your model description here"></textarea>
-                        </div>
-                    </div>                    
-
                     <div class="file has-name is-fullwidth">
                         <label class="file-label">
                             <input id="csv1" class="file-input" type="file" accept=".csv" name="myCsv1">
@@ -180,8 +156,6 @@ export const handleClearButton = function (event) {
         event.preventDefault();
     }
     const form = $("#modelRender-form");
-    form[0]['title'].value = "";
-    document.getElementById("description").value = "";
     let $name1 = $(".csv1");
     $name1.html("");
     let $name2 = $(".csv2");
@@ -196,12 +170,8 @@ export const handleSubmitButton = async function (event) {
     event.preventDefault();
     event.stopPropagation();
 
-    const form = $("#modelRender-form");
-    const title = form[0]['title'].value;
-    const description = form[0]['description'].value;
     const fromDatabase = $('#fromDatabase')[0]['checked'];
     const $modelRender = $("#modelRender");
-    model = $('#model_input')[0].value;
 
     //Running model with data from csv
     if ((!fromDatabase) && (video_lib_headers.length > 0) && (user_interactions_headers.length > 0)) {
@@ -247,6 +217,8 @@ export const handleSubmitButton = async function (event) {
 
         preprocessNeeded = false;
 
+        userids = ["abc123", "brc789", "nsk579", "cgb456"];  //Look up in database
+
         //TO-DO upload features directly from database
         //Generate predefined features to select from data currently available in database
 
@@ -256,68 +228,71 @@ export const handleSubmitButton = async function (event) {
     }
 
     //Rendering models area
-    $modelRender.html(renderModelsArea(title, description, model, featureSettings, pdict));
+    $modelRender.html(renderModelsArea(featureSettings, pdict, userids));
     //Clear form   
     handleClearButton(event);
 };
 
 //rendering model area
-export const renderModelsArea = function (title, description, model, featureSettings, pdict) {
+export const renderModelsArea = function (featureSettings, pdict, userids) {
 
     let result = `    
     <div class="column is-full">
         <div class="box">
             <div class="card">
                 <header class="card-header">
-                    <p class="card-header-title">
-                        ${title}
-                    </p>                           
+                    <label class="label">Settings</label>           
                 </header>
                 <div class="card-content">
                     <div class="content">
-                        <form id="runModel-form">                        
-                        <div>
-                            <p class="card-header-title">
-                                <strong>Model: ${model}</strong>
-                            </p>  
-                            <p> <i> ${description} </i></p>
-                        </div> 
-                        <br>
-                        <br>
-                        <p><strong> Select features: </strong></p>  
-                        ${renderFeatures(featureSettings)}
-                        <br>
-                        <div class="field">
-                            <label class="label" id="user_label">Select a user</label>
-                            <div class="control">
-                                <div class="select">
-                                    <select id="user_input">
-                                        ${renderUsersList(userids)}
-                                    </select>
+                        <form id="runModel-form">
+                            <div class="field">
+                                <label class="label" id="model_label" >Select a model</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select id="model_input">
+                                            <option>logreg</option>
+                                            <option>multilogreg</option>
+                                            <option>knn</option>
+                                            <option>xgboost</option>
+                                            <option>mlp</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>                               
+                            <p><strong> Select features: </strong></p>  
+                            ${renderFeatures(featureSettings)}
+                            <br>                           
+
+                            <div class="field">
+                                <label class="label" id="numKFolds_label">NumKFolds</label>
+                                <div class="control">
+                                    <input id="numKFolds" class="input" type="number" placeholder="5" min="2" max="10"/>
                                 </div>
                             </div>
-                        </div>
+                            <br>   
 
-                        <div class="field">
-                            <div class="control">
-                                <input type='checkbox' id="checkAccuracy"/><label for="checkAccuracy"></label> <label>Check Accuracy</label>
-                                <br>                          
+                            <div class="field">
+                                <label class="label" id="checkAccuracyLabel">Check Accuracy</label>
+                                <div class="control">
+                                    <div class="select">
+                                        <select id="checkAccuracy">
+                                            <option>F1Scores</option>
+                                            <option>nUserF1Scores</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                        </div> 
-
-                        <div class="field">
-                            <div class="control">
-                                <input type='checkbox' id="showVidTitles"/><label for="showVidTitles"></label> <label>Show video titles</label>
-                                <br>                          
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label class="label" id="numKFolds_label">NumKFolds</label>
-                            <div class="control">
-                                <input id="numKFolds" class="input" type="number" placeholder="5" min="2" max="10"/>
-                            </div>
-                        </div>                                                  
+                            <br>            
+                          
+                            <div id="accuracyFollowUp">${renderAccuracyFollowUp("F1Scores")}</div>
+                            <br> 
+                            
+                            <label class="container">
+                                <input type="checkbox" checked="checked">
+                                <span class="checkmark">To Test</span>                                
+                            </label>
+                                                                           
                         </form>   
                     </div>                      
                     <div id="columns" class="columns is-mobile is-centered is-vcentered">
@@ -334,8 +309,44 @@ export const renderModelsArea = function (title, description, model, featureSett
                 </footer>
             </div>
         </div>
-    </div>    
+    </div>        
 `;
+    return result;
+};
+
+//rendering the features that are dependent on the type of F1Score selected for accuracy
+export const renderAccuracyFollowUp = function (option) {
+    let result = ``;
+
+    if (option == "F1Scores") {
+        result = ` <div class="field">
+                        <label class="label" id="user_label">Select a user</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="user_input">
+                                    ${renderUsersList(userids)}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <br> 
+                    <div class="field">
+                        <div class="control">
+                            <input type='checkbox' id="showVidTitles"/><label for="showVidTitles"></label> <label>Show video titles</label>
+                            <br>                          
+                        </div>
+                    </div>
+                `;
+    } else if (option == "nUserF1Scores") {
+        result = `<div class="field">
+                    <label class="label" id="nUserFraction_label">nUserFraction</label>
+                    <div class="control">
+                        <input id="nUserFraction" class="input" type="number" placeholder="0.66" min="0" max="1"/>
+                    </div>
+                </div> 
+            `;
+    }
+
     return result;
 };
 
@@ -391,10 +402,24 @@ export const runModel = async function (event, featureSettings) {
     event.preventDefault();
     let myFeatures = [];
     let $myForm = $('#runModel-form')[0];
-    const user = $('#user_input')[0].value;
-    const checkAccuracy = $('#checkAccuracy')[0]['checked'];
-    const showVidTitles = $('#showVidTitles')[0]['checked'];
     let numKFolds = $('#numKFolds')[0].value;
+    let model = $('#model_input')[0].value;
+    let accuracyOption = $('#checkAccuracy')[0].value;
+    let showVidTitles = false;
+    let user = "";
+    let nUserFraction = 0;
+
+    if (accuracyOption == "F1Scores") {
+        showVidTitles = $('#showVidTitles')[0]['checked'];
+        user = $('#user_input')[0].value;
+    } else if (accuracyOption == "nUserF1Scores") {
+        nUserFraction = $('#nUserFraction')[0].value;
+
+        //validate nUserFraction input. Default value is 0.66
+        if (nUserFraction == "") {
+            nUserFraction = 0.66;
+        }
+    }
 
     //Validating numKFolds input. Has to be greater or equal to 2. Defaultl is 5
     if ((numKFolds == null) || (numKFolds < 2)) {
@@ -425,11 +450,11 @@ export const runModel = async function (event, featureSettings) {
     //Sending settings to python
     let settings = {
         modelType: model,
-        checkF1Scores: checkAccuracy, //no aparecera si esta seleccionado nUserF1scores & viceversa
+        checkF1Scores: (accuracyOption == "F1Scores"),
         numKFolds: numKFolds,
-        showVidTitles: showVidTitles, //no aparecera si esta seleccionado nUserF1scores
-        nUserF1Scores: false,
-        nUserFraction: 0.66         //only if nuserF1scores is true
+        showVidTitles: showVidTitles,
+        nUserF1Scores: (accuracyOption == "nUserF1Scores"),
+        nUserFraction: nUserFraction
     }
 
     console.log("User: " + user);
@@ -438,43 +463,24 @@ export const runModel = async function (event, featureSettings) {
         console.log(settings[key]);
     }
     console.log("Features: " + myFeatures);
-    console.log("Pass call to python file");
-
 
     if (preprocessNeeded) {
-        //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
-        //amount_of_time_watched, length, vid
-        let user_time_watched = {}
-        user_time_watched = gettingUserTimeWatched(user_time_watched, video_lib, user_interactions, user);
 
-        data.push(user_time_watched);
+        if (accuracyOption == "F1Scores") {
 
-        //TO-DO: send data to backend and wait for a response
-        //TO-DO: Train model
-        const result = await trainModel(user, fSettings, settings, data);
-        // console.log(result);
-        console.log(result.data);
-        // console.log(result.data.featureSettings);
-        // console.log(result.data.settings);
-        // console.log(result.data.data);
+            //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
+            //amount_of_time_watched, length, vid
+            let user_time_watched = {}
+            user_time_watched = gettingUserTimeWatched(user_time_watched, video_lib, user_interactions, user);
 
+            data.push(user_time_watched);
+        }
     }
 
-    //TO-DO: send data to backend and wait for a response
-    //TO-DO: Train model
-    // const result = await trainModel(user, featureSettings, settings, data);
-    // console.log(result);
-    // console.log(result.data);
-    // console.log(result.status);
-
-    //made-up response    
-    // let response = {
-    //     uid: user,
-    //     accuracy: 0.90,
-    //     truePositive: 0,
-    //     trueNegative: 0,
-    //     list: [["movie1", 0.98], ["movie2", 0.33], ["movie3", 0.99]]
-    // }
+    //TO_DO TRY AND CATCH HERE
+    //Train model with featureSettings, settings, data
+    const result = await trainModel(user, fSettings, settings, data);
+    console.log(result.data);
 
     //Rendering output area with backend response
     const $output = $("#output");
