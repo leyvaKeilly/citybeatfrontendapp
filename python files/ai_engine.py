@@ -133,12 +133,12 @@ def aimodel(uid, settings, featureSettings, data):
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
                 outputDict['data'] = sorted(
-                    zip(vids_prob, vids, titles), reverse=True)
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
                 return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                outputDict['data'] = sorted(zip(vids_prob.tolist(), vids.tolist()), reverse=True)
                 return(outputDict)
 
     # likely not the algorithm to use due to binary nature of initial question
@@ -167,12 +167,12 @@ def aimodel(uid, settings, featureSettings, data):
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
                 outputDict['data'] = sorted(
-                    zip(vids_prob, vids, titles), reverse=True)
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
                 return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                outputDict['data'] = sorted(zip(vids_prob.tolist(), vids.tolist()), reverse=True)
                 return(outputDict)
 
     def runMLP(ttuserint, vidfeatures, settings=settings):
@@ -197,12 +197,12 @@ def aimodel(uid, settings, featureSettings, data):
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
                 outputDict['data'] = sorted(
-                    zip(vids_prob, vids, titles), reverse=True)
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
                 return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                outputDict['data'] = sorted(zip(vids_prob.tolist(), vids.tolist()), reverse=True)
                 return(outputDict)
 
     def runXGBoost(ttuserint, vidfeatures, settings=settings):
@@ -241,12 +241,12 @@ def aimodel(uid, settings, featureSettings, data):
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1).values)[:, 1]
                 outputDict['data'] = sorted(
-                    zip(vids_prob, vids, titles), reverse=True)
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
                 return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1).values)[:, 1]
-                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                outputDict['data'] = sorted(zip(vids_prob.tolist(), vids.tolist()), reverse=True)
                 return(outputDict)
 
     # returns the F1 score and results from confusion matrix.
@@ -403,8 +403,7 @@ def aimodel(uid, settings, featureSettings, data):
     if settings['nUserF1Scores'] and data is None:
         output = {'f1score': 0, 'tp': 0, 'fp': 0,
                   'tn': 0, 'fn': 0, 'nusers': 0, 'data': []}
-        userIDs = None
-        engine = None
+        
         dbusername = 'dxxgpeye'
         password = 'LuMS6WYy5EDkUs85hXToB9GtWGF78NSM'
         host = 'drona.db.elephantsql.com'
@@ -432,13 +431,6 @@ def aimodel(uid, settings, featureSettings, data):
         f1score, tp, fp, tn, fn = 0, 0, 0, 0, 0
 
         for user in userIDStrings:
-
-            user_time_watched_ratio = None
-            categories = None
-            vid_num_views = None
-            vid_num_selected = None
-            vid_avg_time_watched = None
-            vid_avg_interaction_span = None
 
             sql_user_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
             from userinteractions, videolibrary, userinfo 
@@ -473,7 +465,6 @@ def aimodel(uid, settings, featureSettings, data):
                 user_time_watched_ratio.drop('index', axis=1)
 
             # table of the categories for all videos in the videolibrary
-            categories = pd.DataFrame.from_dict(data[1])
             categories['primary_category'] = categories['primary_category'].apply(
                 rstrip)
             categories['sub_category'] = categories['sub_category'].apply(
@@ -482,12 +473,8 @@ def aimodel(uid, settings, featureSettings, data):
                 rstrip)
 
             # table of videos with the ratio of number of unique views to total number of users
-
-            vid_num_views = pd.DataFrame.from_dict(data[2])
             vid_num_views['vid_user_watched_ratio'] = vid_num_views['num_distinct_views']/num_users
 
-            # table of videos with the count of how many times it has been selected, used later for other table calculations
-            vid_num_selected = pd.DataFrame.from_dict(data[3])
             # table of videos with the ratio of number of times video has been selected to number of unique views,
             # merged with the vid_num_views table from above
             vid_view_info = pd.merge(
@@ -498,14 +485,8 @@ def aimodel(uid, settings, featureSettings, data):
                 vid_view_info['num_distinct_views'] > 0, vid_view_info['num_selected']/vid_view_info['num_distinct_views'], 0)
 
             # table of the average amount of time in seconds that the video has been watched
-            vid_avg_time_watched = pd.DataFrame.from_dict(data[4])
             vid_avg_time_watched['vid_avg_time_watched_ratio'] = vid_avg_time_watched['vid_avg_time_watched'] / \
                 vid_avg_time_watched['length']
-
-            # table of the average length of time that has passed since users watched the video and since the video was released
-            vid_avg_interaction_span = pd.DataFrame.from_dict(data[5])
-            # vid_avg_interaction_span['vid_avg_interaction_span_days'] = vid_avg_interaction_span['vid_avg_interaction_span_days'].apply(
-            #    stripdays)
 
             # merges the tables together by vid to form one large table, vidfeatures
             # vidfeatures is a table of the entire videolibrary with the previously calculated columns
@@ -518,8 +499,6 @@ def aimodel(uid, settings, featureSettings, data):
             vidfeatures = vidfeatures.fillna(value=0)
 
             # drops features set to False by user in featureSettings + other unused table columns
-            # global userDefinedFeatures
-            # userDefinedFeatures = [f[0] for f in featureSettings.items() if f[1] is True]
             dropfeatures = [f[0]
                             for f in featureSettings.items() if f[1] is False]
             vidfeatures = vidfeatures.drop(
