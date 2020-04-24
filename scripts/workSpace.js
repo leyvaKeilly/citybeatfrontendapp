@@ -451,8 +451,7 @@ export const runModel = async function (event, featureSettings) {
         // //amount_of_time_watched, length, vid
         let user_time_watched = {}
         user_time_watched = gettingUserTimeWatched(user_time_watched, video_lib, user_interactions, user);
-
-        data.push(user_time_watched);
+        data[6] = user_time_watched;
 
     } else {
         accuracyOption = $('#checkAccuracy')[0].value;
@@ -530,7 +529,7 @@ export const runModel = async function (event, featureSettings) {
 function trainModel(user, featureSettings, settings, data) {
     return axios({
         method: 'post',
-        url: 'https://citybeatapp.herokuapp.com/',
+        url: 'http://localhost:8000/',
         crossOrigin: true,
         data: {
             user,
