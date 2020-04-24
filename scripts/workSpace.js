@@ -49,7 +49,7 @@ export const workPlaceRender = function () {
     //renderAccuracyFollowUp listener
     $modelRender.on("change", "#checkAccuracy", () => {
         const $accuracyDiv = $("#accuracyFollowUp");
-        $accuracyDiv.html(renderAccuracyFollowUp(event.target.value));
+        $accuracyDiv.html(renderAccuracyFollowUp(event.target.value, userids));
     });
 
     //TO_DO: try and catch
@@ -58,7 +58,13 @@ export const workPlaceRender = function () {
         video_lib = [];
         let nameClass = ".csv1";
         let stringDate = "release_date";
-        gettingCSVData(event, nameClass, stringDate, video_lib_headers, video_lib);
+        try {
+            gettingCSVData(event, nameClass, stringDate, video_lib_headers, video_lib);
+        }
+        catch (err) {
+            alert(err);
+            //handleClearButton();
+        }
     });
 
     //getting data from user_interactions csv file
@@ -66,17 +72,31 @@ export const workPlaceRender = function () {
         user_interactions = [];
         let nameClass = ".csv2";
         let stringDate = "date_watched";
-        gettingCSVData(event, nameClass, stringDate, user_interactions_headers, user_interactions);
+        try {
+            gettingCSVData(event, nameClass, stringDate, user_interactions_headers, user_interactions);
+        }
+        catch (err) {
+            alert(err);
+            //handleClearButton();
+        }
     });
 };
 
 //rendering form to choose model
 export const renderFormArea = function () {
 
-    return `    
-        <div id="columns" class="columns">    
-            <div id="modelRender">
+    return `
+<div class="card">
+    <div class="card-content" style="background-color:rgb(56, 55, 55)">
+        <div class="media">
+            <div class="media-left">
+                <button onclick="window.open('https://teamd.web.unc.edu/files/2020/04/Test-Plan-Document-1.pdf','resizable=yes')" class="button is-dark is-inverted is-outlined">Documentation</button>
             </div>
+        </div>
+    </div>
+    <div id="columns" class="columns">    
+        <div id="modelRender">
+        </div>
         <div class="column">
             <div class="box">
                 <form id="modelRender-form">                    
@@ -147,6 +167,7 @@ export const renderFormArea = function () {
     </div>
     <div id="output">
     </div>
+</div>
     `;
 };
 
@@ -226,7 +247,6 @@ export const handleSubmitButton = async function (event) {
         alert("Please, choose your data either from database, or upload two csv files");
         return;
     }
-    console.log(userids)
     //Rendering models area
     $modelRender.html(renderModelsArea(featureSettings, pdict, userids));
     //Clear form   
@@ -237,12 +257,9 @@ export const handleSubmitButton = async function (event) {
 export const renderModelsArea = function (featureSettings, pdict, userids) {
 
     let result = `    
-    <div class="column is-full">
-        <div class="box">
-            <div class="card">
-                <header class="card-header">
-                    <label class="label">Settings</label>           
-                </header>
+        <div class="column is-full">
+            <div class="box">          
+                <label class="label">Settings</label>           
                 <div class="card-content">
                     <div class="content">
                         <form id="runModel-form">
@@ -271,21 +288,10 @@ export const renderModelsArea = function (featureSettings, pdict, userids) {
                                 </div>
                             </div>
                             <br>   
-
-                            <div class="field">
-                                <label class="label" id="checkAccuracyLabel">Check Accuracy</label>
-                                <div class="control">
-                                    <div class="select">
-                                        <select id="checkAccuracy">
-                                            <option>F1Scores</option>
-                                            <option>nUserF1Scores</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
+                            ${renderAccuracySelector()}                            
                             <br>            
                           
-                            <div id="accuracyFollowUp">${renderAccuracyFollowUp("F1Scores")}</div>
+                            <div id="accuracyFollowUp">${renderAccuracyFollowUp("F1Scores", userids)}</div>
                             <br> 
                             
                             <label class="container">
@@ -306,16 +312,41 @@ export const renderModelsArea = function (featureSettings, pdict, userids) {
                 <footer class="card-footer">
                     <a href="#" class="runButton card-footer-item">Run</a>               
                     <a href="#" id="deleteModel" class="card-footer-item">Delete</a>
-                </footer>
+                </footer>            
             </div>
-        </div>
-    </div>        
-`;
+        </div>        
+    `;
+    return result;
+};
+
+//rendering check accuracy selector. if the user uploads data from csv files, only checkF1Scores can be provided. Otherwise, it can choose from checkF1Scores and nF1Scores
+export const renderAccuracySelector = function () {
+    let result = ``;
+    if (preprocessNeeded) {
+        result = `<div class="field">
+                    <label class="label" id="F1Score_label">Check Accuracy: F1Score</label>
+                </div>
+            `;
+    }
+    else {
+        result = `<div class="field">
+                        <label class="label" id="checkAccuracyLabel">Check Accuracy</label>
+                        <div class="control">
+                            <div class="select">
+                                <select id="checkAccuracy">
+                                    <option>F1Scores</option>
+                                    <option>nUserF1Scores</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                `;
+    }
     return result;
 };
 
 //rendering the features that are dependent on the type of F1Score selected for accuracy
-export const renderAccuracyFollowUp = function (option) {
+export const renderAccuracyFollowUp = function (option, userids) {
     let result = ``;
 
     if (option == "F1Scores") {
@@ -394,6 +425,7 @@ export const handleDeleteButton = function () {
 
     $model.html("");
     $output.html("");
+    data = [];
     handleClearButton(event);
 };
 
@@ -404,20 +436,36 @@ export const runModel = async function (event, featureSettings) {
     let $myForm = $('#runModel-form')[0];
     let numKFolds = $('#numKFolds')[0].value;
     let model = $('#model_input')[0].value;
-    let accuracyOption = $('#checkAccuracy')[0].value;
+    let accuracyOption = "F1Scores";
     let showVidTitles = false;
     let user = "";
     let nUserFraction = 0;
+    let response = "";
 
-    if (accuracyOption == "F1Scores") {
+    if (preprocessNeeded) {
+
+        accuracyOption = "F1Scores";
         showVidTitles = $('#showVidTitles')[0]['checked'];
         user = $('#user_input')[0].value;
-    } else if (accuracyOption == "nUserF1Scores") {
-        nUserFraction = $('#nUserFraction')[0].value;
+        // //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
+        // //amount_of_time_watched, length, vid
+        let user_time_watched = {}
+        user_time_watched = gettingUserTimeWatched(user_time_watched, video_lib, user_interactions, user);
 
-        //validate nUserFraction input. Default value is 0.66
-        if (nUserFraction == "") {
-            nUserFraction = 0.66;
+        data.push(user_time_watched);
+
+    } else {
+        accuracyOption = $('#checkAccuracy')[0].value;
+        if (accuracyOption == "F1Scores") {
+            showVidTitles = $('#showVidTitles')[0]['checked'];
+            user = $('#user_input')[0].value;
+        } else if (accuracyOption == "nUserF1Scores") {
+            nUserFraction = $('#nUserFraction')[0].value;
+
+            //validate nUserFraction input. Default value is 0.66
+            if (nUserFraction == "") {
+                nUserFraction = 0.66;
+            }
         }
     }
 
@@ -464,28 +512,18 @@ export const runModel = async function (event, featureSettings) {
     }
     console.log("Features: " + myFeatures);
 
-    if (preprocessNeeded) {
-
-        if (accuracyOption == "F1Scores") {
-
-            // //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
-            // //amount_of_time_watched, length, vid
-            let user_time_watched = {}
-            user_time_watched = gettingUserTimeWatched(user_time_watched, video_lib, user_interactions, user);
-
-            data.push(user_time_watched);
-        }
-    }
-
-    //TO_DO TRY AND CATCH HERE
-    //Train model with featureSettings, settings, data
+    //Train model with userid, featureSettings, settings, data
     console.log(data)
-    const result = await trainModel(user, fSettings, settings, data);
-    console.log(result.data);
-
-    //Rendering output area with backend response
-    const $output = $("#output");
-    // $output.html(renderOutputArea(response));
+    try {
+        const result = await trainModel(user, fSettings, settings, data);
+        response = result.data.data;
+        //Rendering output area with backend response
+        const $output = $("#output");
+        $output.html(renderOutputArea(response));
+    }
+    catch (err) {
+        alert(err);
+    }
 };
 
 //AJAX function
@@ -503,13 +541,14 @@ function trainModel(user, featureSettings, settings, data) {
     });
 }
 
-//Rendering output area with backend response
+//Rendering output area with backend response. Note: For this to work properly, the backend needs to send an array called "data" with the predictions
 export const renderOutputArea = function (response) {
+    console.log(response)
     let result = ``;
     let table = ``;
 
     for (let key in response) {
-        if (key != "list") {
+        if (key != "data") {
             result += (`
             <div class="level-item has-text-centered">
                 <div>
@@ -521,7 +560,15 @@ export const renderOutputArea = function (response) {
         }
     }
 
-    response["list"].map((elmt) => {
+    // Displaying a maximum of 20 videos, unless there are less than 20 videos availables  -- TO-DO ?? Maybe
+    let i;
+    if (response["data"].length >= 20) {
+        i = 20;
+    } else {
+        i = response["data"].length;
+    }
+
+    response["data"].map((elmt) => {
         table += (`<tr>`);
         for (let i in elmt) {
             table += (`         

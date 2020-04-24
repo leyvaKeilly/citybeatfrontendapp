@@ -1,7 +1,14 @@
 export const contactPageRender = function () {
 
     return `
-    <div class="card">        
+    <div class="card">
+        <div class="card-content" style="background-color:rgb(56, 55, 55)">
+            <div class="media">
+                <div class="media-left">
+                    <button onclick="window.open('https://teamd.web.unc.edu/','resizable=yes')" class="button is-dark is-inverted is-outlined">More about the process</button>
+                </div>
+            </div>
+        </div>        
         <div class="card-content">
             <div class="content has-text-centered">
                 <div class="columns is-centered">
@@ -51,7 +58,7 @@ export const contactPageRender = function () {
                         <article class="media">
                             <figure class="media-left image is-128x128">
                                 <p class="image is-128x128">
-                                    <img class="is-rounded" src="images/image1.png" alt="Keilly Leyva picture" style="width: 128px; height: 128px">
+                                    <img class="is-rounded" src="images/keilly.jpg" alt="Keilly Leyva picture" style="width: 128px; height: 128px">
                                 </p>
                             </figure>
                             <div class="media-content">
@@ -66,7 +73,7 @@ export const contactPageRender = function () {
                         <article class="media">
                             <figure class="media-left image is-128x128">
                                 <p class="image is-128x128">
-                                    <img class="is-rounded" src="imagenes/vijay.jpg" alt="Vijay Placeholder image" style="width: 128px; height: 128px">
+                                    <img class="is-rounded" src="images/vijay.jpg" alt="Vijay Placeholder image" style="width: 128px; height: 128px">
                                 </p>
                             </figure>
                             <div class="media-content">

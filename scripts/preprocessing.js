@@ -26,6 +26,11 @@ export const gettingCSVData = function (event, nameClass, stringDate, header_arr
                     header_arr.push(elmt)
                 }
             });
+            if (!(header_arr.includes(stringDate))) {
+                alert("The csv file is either empty or it is not properly formatted. Please refer to Documentation for more information");
+                handleClearButton();
+                return;
+            }
 
             file.shift(0);                //leaving out the headers
 
