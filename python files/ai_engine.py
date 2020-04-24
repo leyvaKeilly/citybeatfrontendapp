@@ -10,12 +10,43 @@ from sklearn.neural_network import MLPClassifier
 import xgboost as xgb
 from sklearn.model_selection import KFold
 from sklearn import metrics
+import json
 
 
 def aimodel(uid, settings, featureSettings, data):
-    # dependencies: psycopg2, scikitlearn, pandas, numpy, sqlalchemy, xgboost
+    warnings.filterwarnings('ignore')
+
+    sql_uids = """select uid from userinfo"""
+
+    sql_categories = """select vid,title,primary_category,sub_category,sub_sub_category
+    from videolibrary"""
+
+    sql_vid_num_views = """select videolibrary.vid, count(distinct userinteractions.uid) as num_distinct_views
+    from userinteractions, videolibrary
+    where userinteractions.vid = videolibrary.vid
+    group by videolibrary.vid"""
+
+    sql_num_users = """select count(userinfo.uid) as num_users
+    from userinfo"""
+
+    sql_vid_num_selected = """select videolibrary.vid, count(distinct userinteractions.uid) as num_selected 
+    from userinteractions, videolibrary
+    where userinteractions.vid = videolibrary.vid 
+    and userinteractions.vid_selected = true
+    group by videolibrary.vid"""
+
+    sql_vid_avg_time_watched = """select videolibrary.vid,videolibrary.length, avg(userinteractions.amount_of_time_watched) as vid_avg_time_watched
+    from userinteractions, videolibrary
+    where userinteractions.vid = videolibrary.vid
+    group by videolibrary.vid"""
+
+    sql_vid_avg_interaction_span = """select avg(date_watched - release_date) as vid_avg_interaction_span_days, userinteractions.vid 
+    from userinteractions, videolibrary, userinfo 
+    where userinteractions.vid = videolibrary.vid
+    group by userinteractions.vid"""
 
     # function to be used on columns to strip whitespace
+
     def rstrip(string):
         if string is None:
             return(None)
@@ -57,8 +88,11 @@ def aimodel(uid, settings, featureSettings, data):
         if settings['nUserF1Scores'] is True:
             return(checkAccuracy(X, y, settings['numKFolds'], 'logreg'))
         else:
+            outputDict = {'f1score': 0, 'tp': 0,
+                          'fp': 0, 'tn': 0, 'fn': 0, 'nusers': 1}
             if settings['checkF1Scores'] is True:
-                checkAccuracy(X, y, settings['numKFolds'], 'logreg')
+                outputDict = checkAccuracy(
+                    X, y, settings['numKFolds'], 'logreg')
 
             model = LogisticRegression(solver='liblinear').fit(X, y)
             vids = np.array(vidfeatures['vid'])
@@ -66,11 +100,15 @@ def aimodel(uid, settings, featureSettings, data):
                 titles = np.array(vidfeatures['title'])
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                return(sorted(zip(vids_prob, vids, titles), reverse=True))
+                outputDict['data'] = sorted(
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
+                return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                return(sorted(zip(vids_prob, vids), reverse=True))
+                outputDict['data'] = sorted(
+                    zip(vids_prob.tolist(), vids.tolist()), reverse=True)
+                return(outputDict)
 
     def runKNN(ttuserint, vidfeatures, settings=settings):
 
@@ -82,8 +120,10 @@ def aimodel(uid, settings, featureSettings, data):
         if settings['nUserF1Scores'] is True:
             return(checkAccuracy(X, y, settings['numKFolds'], 'knn'))
         else:
+            outputDict = {'f1score': 0, 'tp': 0,
+                          'fp': 0, 'tn': 0, 'fn': 0, 'nusers': 1}
             if settings['checkF1Scores'] is True:
-                checkAccuracy(X, y, settings['numKFolds'], 'knn')
+                outputDict = checkAccuracy(X, y, settings['numKFolds'], 'knn')
 
             model = KNeighborsClassifier(
                 n_neighbors=3, weights='uniform', metric='minkowski').fit(X, y)
@@ -92,25 +132,32 @@ def aimodel(uid, settings, featureSettings, data):
                 titles = np.array(vidfeatures['title'])
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                return(sorted(zip(vids_prob, vids, titles), reverse=True))
+                outputDict['data'] = sorted(
+                    zip(vids_prob, vids, titles), reverse=True)
+                return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                return(sorted(zip(vids_prob, vids), reverse=True))
+                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                return(outputDict)
 
     # likely not the algorithm to use due to binary nature of initial question
     def runMultiLogisticRegression(ttuserint, vidfeatures, settings=settings):
 
         ttuserint = ttuserint.drop('if_watched', axis=1)
         y = ttuserint['if_watched_multi']
-        features = list(set(ttuserint.columns) - set(['if_watched_multi']))
+        features = list(set(ttuserint.columns) -
+                        set(['if_watched_multi', 'index']))
         X = ttuserint[features]
 
         if settings['nUserF1Scores'] is True:
             return(checkAccuracy(X, y, settings['numKFolds'], 'multilogreg'))
         else:
+            outputDict = {'f1score': 0, 'tp': 0,
+                          'fp': 0, 'tn': 0, 'fn': 0, 'nusers': 1}
             if settings['checkF1Scores'] is True:
-                checkAccuracy(X, y, settings['numKFolds'], 'multilogreg')
+                outputDict = checkAccuracy(
+                    X, y, settings['numKFolds'], 'multilogreg')
 
             model = LogisticRegression(
                 solver='liblinear', multi_class='auto').fit(X, y)
@@ -119,11 +166,14 @@ def aimodel(uid, settings, featureSettings, data):
                 titles = np.array(vidfeatures['title'])
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                return(sorted(zip(vids_prob, vids, titles), reverse=True))
+                outputDict['data'] = sorted(
+                    zip(vids_prob, vids, titles), reverse=True)
+                return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                return(sorted(zip(vids_prob, vids), reverse=True))
+                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                return(outputDict)
 
     def runMLP(ttuserint, vidfeatures, settings=settings):
 
@@ -134,8 +184,10 @@ def aimodel(uid, settings, featureSettings, data):
         if settings['nUserF1Scores'] is True:
             return(checkAccuracy(X, y, settings['numKFolds'], 'mlp'))
         else:
+            outputDict = {'f1score': 0, 'tp': 0,
+                          'fp': 0, 'tn': 0, 'fn': 0, 'nusers': 1}
             if settings['checkF1Scores'] is True:
-                checkAccuracy(X, y, settings['numKFolds'], 'mlp')
+                outputDict = checkAccuracy(X, y, settings['numKFolds'], 'mlp')
 
             model = MLPClassifier(
                 solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1).fit(X, y)
@@ -144,11 +196,14 @@ def aimodel(uid, settings, featureSettings, data):
                 titles = np.array(vidfeatures['title'])
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                return(sorted(zip(vids_prob, vids, titles), reverse=True))
+                outputDict['data'] = sorted(
+                    zip(vids_prob, vids, titles), reverse=True)
+                return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                return(sorted(zip(vids_prob, vids), reverse=True))
+                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                return(outputDict)
 
     def runXGBoost(ttuserint, vidfeatures, settings=settings):
 
@@ -161,9 +216,11 @@ def aimodel(uid, settings, featureSettings, data):
         if settings['nUserF1Scores'] is True:
             return(checkAccuracy(X, y, settings['numKFolds'], 'mlp'))
         else:
-            ca = 0
+            outputDict = {'f1score': 0, 'tp': 0,
+                          'fp': 0, 'tn': 0, 'fn': 0, 'nusers': 1}
             if settings['checkF1Scores'] is True:
-                checkAccuracy(X, y, settings['numKFolds'], 'xgboost')
+                outputDict = checkAccuracy(
+                    X, y, settings['numKFolds'], 'xgboost')
 
             model = xgb.XGBClassifier(
                 learning_rate=0.1,
@@ -183,11 +240,14 @@ def aimodel(uid, settings, featureSettings, data):
                 titles = np.array(vidfeatures['title'])
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1).values)[:, 1]
-                return(sorted(zip(vids_prob, vids, titles), reverse=True))
+                outputDict['data'] = sorted(
+                    zip(vids_prob, vids, titles), reverse=True)
+                return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1).values)[:, 1]
-                return(sorted(zip(vids_prob, vids), reverse=True))
+                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                return(outputDict)
 
     # returns the F1 score and results from confusion matrix.
     # The F1 score is define as follows: F1 = 2 * (precision * recall) / (precision + recall)
@@ -294,7 +354,7 @@ def aimodel(uid, settings, featureSettings, data):
                 fp = round(final_conf_matrix[0][1]/sample_size, 2)
                 tn = round(final_conf_matrix[1][1]/sample_size, 2)
                 fn = round(final_conf_matrix[1][0]/sample_size, 2)
-                return({'f1score': f1score, 'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn})
+                return({'f1score': f1score, 'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn, 'nusers': 1})
 
         else:
             avg_f1_scores = sum(f1_scores)/len(f1_scores)
@@ -340,10 +400,28 @@ def aimodel(uid, settings, featureSettings, data):
                 fn = round(final_conf_matrix[1][0]/sample_size, 2)
                 return({'f1score': f1score, 'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn})
 
-    if settings['nUserF1Scores'] is True:
-        userIDs = pd.DataFrame(data[0], columns=['uid'])
-        n_Users = int(userIDs.shape[0]*settings['nUserFraction'])
+    if settings['nUserF1Scores'] and data is None:
+        output = {'f1score': 0, 'tp': 0, 'fp': 0,
+                  'tn': 0, 'fn': 0, 'nusers': 0, 'data': []}
+        userIDs = None
+        engine = None
+        dbusername = 'dxxgpeye'
+        password = 'LuMS6WYy5EDkUs85hXToB9GtWGF78NSM'
+        host = 'drona.db.elephantsql.com'
+        port = '5432'
+        database = 'dxxgpeye'
 
+        # elephantSQL connection
+        #connection = psycopg2.connect("dbname='dxxgpeye' user='dxxgpeye' host='drona.db.elephantsql.com' password='LuMS6WYy5EDkUs85hXToB9GtWGF78NSM'")
+
+        engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
+                               .format(user=dbusername,
+                                       pw=password,
+                                       db=database))
+
+        userIDs = pd.read_sql_query(sql_uids, con=engine)
+
+        n_Users = int(userIDs.shape[0]*settings['nUserFraction'])
         if n_Users == 0:
             n_Users = 1
 
@@ -355,11 +433,33 @@ def aimodel(uid, settings, featureSettings, data):
 
         for user in userIDStrings:
 
+            user_time_watched_ratio = None
+            categories = None
+            vid_num_views = None
+            vid_num_selected = None
+            vid_avg_time_watched = None
+            vid_avg_interaction_span = None
+
+            sql_user_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
+            from userinteractions, videolibrary, userinfo 
+            where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
+            and userinfo.uid = '{uid}'""".format(uid=uid)
+
+            user_time_watched_ratio = pd.read_sql_query(
+                sql_user_time_watched, con=engine)
+            categories = pd.read_sql_query(sql_categories, con=engine)
+            vid_num_views = pd.read_sql_query(sql_vid_num_views, con=engine)
+            vid_num_selected = pd.read_sql_query(
+                sql_vid_num_selected, con=engine)
+            vid_avg_time_watched = pd.read_sql_query(
+                sql_vid_avg_time_watched, con=engine)
+            vid_avg_interaction_span = pd.read_sql_query(
+                sql_vid_avg_interaction_span, con=engine)
+            vid_avg_interaction_span['vid_avg_interaction_span_days'] = vid_avg_interaction_span['vid_avg_interaction_span_days'].apply(
+                stripdays)
+
             # integer value of number of users. used in later calculations
             num_users = len(userIDs)
-
-            # table of the video ids that the specified user has watched/skipped
-            user_time_watched_ratio = pd.DataFrame.from_dict(data[6])
 
             user_time_watched_ratio['if_watched'] = np.where(
                 user_time_watched_ratio['amount_of_time_watched']/user_time_watched_ratio['length'] > .75, 1, 0)
@@ -425,8 +525,6 @@ def aimodel(uid, settings, featureSettings, data):
             vidfeatures = vidfeatures.drop(
                 ['num_distinct_views', 'num_selected', 'length', 'vid_avg_time_watched'], axis=1)
             vidfeatures = vidfeatures.drop(dropfeatures, axis=1)
-
-            print("after drop features")
 
             if (featureSettings['primary_category'] is False or featureSettings['sub_category'] is False or featureSettings['sub_sub_category'] is False):
                 cats = ['primary_category', 'sub_category', 'sub_sub_category']
@@ -509,18 +607,71 @@ def aimodel(uid, settings, featureSettings, data):
         fp = round(fp/n_Users, 2)
         tn = round(tn/n_Users, 2)
         fn = round(fn/n_Users, 2)
-        return({'f1score': f1score, 'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn})
+        output['f1score'] = f1score
+        output['tp'] = tp
+        output['fp'] = fp
+        output['tn'] = tn
+        output['fn'] = fn
+        output['nusers'] = n_Users
+        return(output)
 
     else:
-        userIDs = pd.DataFrame(data[0], columns=['uid'])
+        print("here")
+        output = {'f1score': 0, 'tp': 0, 'fp': 0,
+                  'tn': 0, 'fn': 0, 'nusers': 1, 'data': []}
+        userIDs = None
+        user_time_watched_ratio = None
+        categories = None
+        vid_num_views = None
+        vid_num_selected = None
+        vid_avg_time_watched = None
+        vid_avg_interaction_span = None
+
+        if len(data) > 0:
+            print("here")
+            userIDs = pd.DataFrame(data[0], columns=['uid'])
+            user_time_watched_ratio = pd.DataFrame.from_dict(data[6])
+            categories = pd.DataFrame.from_dict(data[1])
+            vid_num_views = pd.DataFrame.from_dict(data[2])
+            vid_num_selected = pd.DataFrame.from_dict(data[3])
+            vid_avg_time_watched = pd.DataFrame.from_dict(data[4])
+            vid_avg_interaction_span = pd.DataFrame.from_dict(data[5])
+        else:
+            dbusername = 'dxxgpeye'
+            password = 'LuMS6WYy5EDkUs85hXToB9GtWGF78NSM'
+            host = 'drona.db.elephantsql.com'
+            port = '5432'
+            database = 'dxxgpeye'
+
+            engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
+                                   .format(user=dbusername,
+                                           pw=password,
+                                           db=database))
+            print("after conn")
+            sql_user_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
+            from userinteractions, videolibrary, userinfo 
+            where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
+            and userinfo.uid = '{uid}'""".format(uid=uid)
+            print(pd.read_sql_query(sql_num_users, con=engine))
+            userIDs = pd.read_sql_query(sql_num_users, con=engine)
+            user_time_watched_ratio = pd.read_sql_query(
+                sql_user_time_watched, con=engine)
+            categories = pd.read_sql_query(sql_categories, con=engine)
+            vid_num_views = pd.read_sql_query(sql_vid_num_views, con=engine)
+            vid_num_selected = pd.read_sql_query(
+                sql_vid_num_selected, con=engine)
+            vid_avg_time_watched = pd.read_sql_query(
+                sql_vid_avg_time_watched, con=engine)
+            vid_avg_interaction_span = pd.read_sql_query(
+                sql_vid_avg_interaction_span, con=engine)
+            vid_avg_interaction_span['vid_avg_interaction_span_days'] = vid_avg_interaction_span['vid_avg_interaction_span_days'].apply(
+                stripdays)
+        print("before num user")
         # integer value of number of users. used in later calculations
         num_users = len(userIDs)
-
-        # table of the video ids that the specified user has watched/skipped
-        user_time_watched_ratio = pd.DataFrame.from_dict(data[6])
         user_time_watched_ratio['if_watched'] = np.where(
             user_time_watched_ratio['amount_of_time_watched']/user_time_watched_ratio['length'] > .75, 1, 0)
-
+        print("user time")
         # used for multilogistic regression
         if settings['modelType'] == 'multilogreg':
             user_time_watched_ratio.index.name = 'index'
@@ -528,9 +679,8 @@ def aimodel(uid, settings, featureSettings, data):
             user_time_watched_ratio['if_watched_multi'] = user_time_watched_ratio['index'].apply(
                 partitionClasses)
             user_time_watched_ratio.drop('index', axis=1)
-
+        print("settings")
         # table of the categories for all videos in the videolibrary
-        categories = pd.DataFrame.from_dict(data[1])
         categories['primary_category'] = categories['primary_category'].apply(
             rstrip)
         categories['sub_category'] = categories['sub_category'].apply(rstrip)
@@ -538,11 +688,7 @@ def aimodel(uid, settings, featureSettings, data):
             rstrip)
 
         # table of videos with the ratio of number of unique views to total number of users
-        vid_num_views = pd.DataFrame.from_dict(data[2])
         vid_num_views['vid_user_watched_ratio'] = vid_num_views['num_distinct_views']/num_users
-
-        # table of videos with the count of how many times it has been selected, used later for other table calculations
-        vid_num_selected = pd.DataFrame.from_dict(data[3])
 
         # table of videos with the ratio of number of times video has been selected to number of unique views,
         # merged with the vid_num_views table from above
@@ -553,12 +699,8 @@ def aimodel(uid, settings, featureSettings, data):
             vid_view_info['num_distinct_views'] > 0, vid_view_info['num_selected']/vid_view_info['num_distinct_views'], 0)
 
         # table of the average amount of time in seconds that the video has been watched
-        vid_avg_time_watched = pd.DataFrame.from_dict(data[4])
         vid_avg_time_watched['vid_avg_time_watched_ratio'] = vid_avg_time_watched['vid_avg_time_watched'] / \
             vid_avg_time_watched['length']
-
-        # table of the average length of time that has passed since users watched the video and since the video was released
-        vid_avg_interaction_span = pd.DataFrame.from_dict(data[5])
 
         # merges the tables together by vid to form one large table, vidfeatures
         # vidfeatures is a table of the entire videolibrary with the previously calculated columns
@@ -591,16 +733,16 @@ def aimodel(uid, settings, featureSettings, data):
         # also contains the dependent variable, time_watched
         ttuserint = pd.merge(vidfeatures, user_time_watched_ratio, how='inner', on='vid').drop(
             ['amount_of_time_watched', 'length'], axis=1)
-
+        print("before keys")
         # this is the subset of the vidfeatures table of the videos that we want to run through the trained model
         # to get our list of probabilities that the selected user will watch each video
         keys = list(ttuserint.vid.values)
         # final table. use this to push through the already trained model
         vidfeatures = vidfeatures[~vidfeatures.vid.isin(keys)]
-
+        print("vidfeatures")
         # final table. use this to test/train the model
         ttuserint = ttuserint.drop(['vid', 'title'], axis=1)
-
+        print("last if stat")
         if settings['modelType'] == 'logreg':
             return(runLogisticRegression(ttuserint, vidfeatures))
         elif settings['modelType'] == 'multilogreg':
