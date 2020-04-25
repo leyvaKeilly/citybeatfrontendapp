@@ -370,8 +370,7 @@ def aimodel(uid, settings, featureSettings, data):
     if settings['nUserF1Scores'] and len(data) == 0:
         output = {'f1score': 0, 'tp': 0, 'fp': 0,
                   'tn': 0, 'fn': 0, 'nusers': 0, 'data': []}
-        userIDs = None
-        engine = None
+
         dbusername = 'dxxgpeye'
         password = 'LuMS6WYy5EDkUs85hXToB9GtWGF78NSM'
         host = 'drona.db.elephantsql.com'
@@ -466,8 +465,6 @@ def aimodel(uid, settings, featureSettings, data):
             vidfeatures = vidfeatures.fillna(value=0)
 
             # drops features set to False by user in featureSettings + other unused table columns
-            # global userDefinedFeatures
-            # userDefinedFeatures = [f[0] for f in featureSettings.items() if f[1] is True]
             dropfeatures = [f[0]
                             for f in featureSettings.items() if f[1] is False]
             vidfeatures = vidfeatures.drop(
