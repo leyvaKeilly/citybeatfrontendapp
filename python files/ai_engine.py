@@ -11,6 +11,7 @@ import xgboost as xgb
 from sklearn.model_selection import KFold
 from sklearn import metrics
 import json
+import os
 
 
 def aimodel(uid, settings, featureSettings, data):
@@ -18,7 +19,7 @@ def aimodel(uid, settings, featureSettings, data):
 
     sql_uids = """select uid from userinfo"""
 
-    sql_categories = """select vid,title,primary_category,sub_category,sub_sub_category
+    sql_categories = """select vid,title,primary_category,sub_category,sub_sub_category, length
     from videolibrary"""
 
     sql_vid_num_views = """select videolibrary.vid, count(distinct userinteractions.uid) as num_distinct_views
@@ -35,7 +36,11 @@ def aimodel(uid, settings, featureSettings, data):
     and userinteractions.vid_selected = true
     group by videolibrary.vid"""
 
-    sql_vid_avg_time_watched = """select videolibrary.vid,videolibrary.length, avg(userinteractions.amount_of_time_watched) as vid_avg_time_watched
+    # sql_vid_avg_time_watched = """select videolibrary.vid,videolibrary.length, avg(userinteractions.amount_of_time_watched) as vid_avg_time_watched
+    # from userinteractions, videolibrary
+    # where userinteractions.vid = videolibrary.vid
+    # group by videolibrary.vid"""
+    sql_vid_avg_time_watched = """select videolibrary.vid, avg(userinteractions.amount_of_time_watched) as vid_avg_time_watched
     from userinteractions, videolibrary
     where userinteractions.vid = videolibrary.vid
     group by videolibrary.vid"""
@@ -133,12 +138,13 @@ def aimodel(uid, settings, featureSettings, data):
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
                 outputDict['data'] = sorted(
-                    zip(vids_prob, vids, titles), reverse=True)
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
                 return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                outputDict['data'] = sorted(
+                    zip(vids_prob.tolist(), vids.tolist()), reverse=True)
                 return(outputDict)
 
     # likely not the algorithm to use due to binary nature of initial question
@@ -167,12 +173,13 @@ def aimodel(uid, settings, featureSettings, data):
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
                 outputDict['data'] = sorted(
-                    zip(vids_prob, vids, titles), reverse=True)
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
                 return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                outputDict['data'] = sorted(
+                    zip(vids_prob.tolist(), vids.tolist()), reverse=True)
                 return(outputDict)
 
     def runMLP(ttuserint, vidfeatures, settings=settings):
@@ -197,12 +204,13 @@ def aimodel(uid, settings, featureSettings, data):
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
                 outputDict['data'] = sorted(
-                    zip(vids_prob, vids, titles), reverse=True)
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
                 return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1))[:, 1]
-                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                outputDict['data'] = sorted(
+                    zip(vids_prob.tolist(), vids.tolist()), reverse=True)
                 return(outputDict)
 
     def runXGBoost(ttuserint, vidfeatures, settings=settings):
@@ -241,12 +249,13 @@ def aimodel(uid, settings, featureSettings, data):
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1).values)[:, 1]
                 outputDict['data'] = sorted(
-                    zip(vids_prob, vids, titles), reverse=True)
+                    zip(vids_prob.tolist(), vids.tolist(), titles.tolist()), reverse=True)
                 return(outputDict)
             else:
                 vids_prob = model.predict_proba(
                     vidfeatures.drop(['vid', 'title'], axis=1).values)[:, 1]
-                outputDict['data'] = sorted(zip(vids_prob, vids), reverse=True)
+                outputDict['data'] = sorted(
+                    zip(vids_prob.tolist(), vids.tolist()), reverse=True)
                 return(outputDict)
 
     # returns the F1 score and results from confusion matrix.
@@ -326,28 +335,7 @@ def aimodel(uid, settings, featureSettings, data):
                 final_conf_matrix = metrics.confusion_matrix(
                     y.values, vid_predictions)
                 sample_size = sum([sum(i) for i in final_conf_matrix])
-                # print(
-                #     '_______________________________________________________________________________')
-                # print('Model: {model}'.format(model=settings['modelType']))
-                # print(
-                #     'The F1 score is a value between 0 and 1. The closer to 1, the better the score.')
-                # print(
-                #     'The F1 score represents a balanced view between model precision and recall.')
-                # print('F1 score: '+str(round(metrics.f1_score(y.values,
-                #                                               vid_predictions, average='weighted'), 4)))
-                # print()
-                # print(
-                #     'Normalized confusion matrix results below. Values are between 0 and 1.\n')
-                # print('True Positive: '+str(round(
-                #     final_conf_matrix[0][0]/sample_size, 2))+' (model is correct when it says you like video)')
-                # print('False Positive (model error): '+str(round(
-                #     final_conf_matrix[0][1]/sample_size, 2))+' (model says you like a video when you don\'t)')
-                # print('True Negative: '+str(round(
-                #     final_conf_matrix[1][1]/sample_size, 2))+' (model is correct when it says you don\'t like video)')
-                # print('False Negative (model error): '+str(round(
-                #     final_conf_matrix[1][0]/sample_size, 2))+' (model says you don\'t like video when you do)')
-                # print(
-                #     '_______________________________________________________________________________')
+
                 f1score = round(metrics.f1_score(
                     y.values, vid_predictions, average='weighted'), 4)
                 tp = round(final_conf_matrix[0][0]/sample_size, 2)
@@ -372,27 +360,6 @@ def aimodel(uid, settings, featureSettings, data):
             if settings['nUserF1Scores'] is True:
                 return(avg_f1_scores, final_conf_matrix[0][0]/sample_size, final_conf_matrix[0][1]/sample_size, final_conf_matrix[1][1]/sample_size, final_conf_matrix[1][0]/sample_size)
             else:
-                # print(
-                #     '_______________________________________________________________________________')
-                # print('Model: {model}'.format(model=settings['modelType']))
-                # print(
-                #     'The F1 score is a value between 0 and 1. The closer to 1, the better the score.')
-                # print(
-                #     'The F1 score represents a balanced view between model precision and recall.')
-                # print('Average F1 score: '+str(round(avg_f1_scores, 4)))
-                # print()
-                # print(
-                #     'Normalized confusion matrix results below. Values are between 0 and 1.\n')
-                # print('True Positive: '+str(round(
-                #     final_conf_matrix[0][0]/sample_size, 2))+' (model is correct when it says you like video)')
-                # print('False Positive (model error): '+str(round(
-                #     final_conf_matrix[0][1]/sample_size, 2))+' (model says you like a video when you don\'t)')
-                # print('True Negative: '+str(round(
-                #     final_conf_matrix[1][1]/sample_size, 2))+' (model is correct when it says you don\'t like video)')
-                # print('False Negative (model error): '+str(round(
-                #     final_conf_matrix[1][0]/sample_size, 2))+' (model says you don\'t like video when you do)')
-                # print(
-                #     '_______________________________________________________________________________')
                 f1score = round(avg_f1_scores, 4)
                 tp = round(final_conf_matrix[0][0]/sample_size, 2)
                 fp = round(final_conf_matrix[0][1]/sample_size, 2)
@@ -400,7 +367,7 @@ def aimodel(uid, settings, featureSettings, data):
                 fn = round(final_conf_matrix[1][0]/sample_size, 2)
                 return({'f1score': f1score, 'tp': tp, 'fp': fp, 'tn': tn, 'fn': fn})
 
-    if settings['nUserF1Scores'] and data is None:
+    if settings['nUserF1Scores'] and len(data) == 0:
         output = {'f1score': 0, 'tp': 0, 'fp': 0,
                   'tn': 0, 'fn': 0, 'nusers': 0, 'data': []}
         userIDs = None
@@ -411,13 +378,8 @@ def aimodel(uid, settings, featureSettings, data):
         port = '5432'
         database = 'dxxgpeye'
 
-        # elephantSQL connection
-        #connection = psycopg2.connect("dbname='dxxgpeye' user='dxxgpeye' host='drona.db.elephantsql.com' password='LuMS6WYy5EDkUs85hXToB9GtWGF78NSM'")
-
-        engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
-                               .format(user=dbusername,
-                                       pw=password,
-                                       db=database))
+        url = os.environ['DATABASE_URL']
+        engine = create_engine(url)
 
         userIDs = pd.read_sql_query(sql_uids, con=engine)
 
@@ -432,13 +394,6 @@ def aimodel(uid, settings, featureSettings, data):
         f1score, tp, fp, tn, fn = 0, 0, 0, 0, 0
 
         for user in userIDStrings:
-
-            user_time_watched_ratio = None
-            categories = None
-            vid_num_views = None
-            vid_num_selected = None
-            vid_avg_time_watched = None
-            vid_avg_interaction_span = None
 
             sql_user_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
             from userinteractions, videolibrary, userinfo 
@@ -473,7 +428,6 @@ def aimodel(uid, settings, featureSettings, data):
                 user_time_watched_ratio.drop('index', axis=1)
 
             # table of the categories for all videos in the videolibrary
-            categories = pd.DataFrame.from_dict(data[1])
             categories['primary_category'] = categories['primary_category'].apply(
                 rstrip)
             categories['sub_category'] = categories['sub_category'].apply(
@@ -483,11 +437,9 @@ def aimodel(uid, settings, featureSettings, data):
 
             # table of videos with the ratio of number of unique views to total number of users
 
-            vid_num_views = pd.DataFrame.from_dict(data[2])
             vid_num_views['vid_user_watched_ratio'] = vid_num_views['num_distinct_views']/num_users
 
             # table of videos with the count of how many times it has been selected, used later for other table calculations
-            vid_num_selected = pd.DataFrame.from_dict(data[3])
             # table of videos with the ratio of number of times video has been selected to number of unique views,
             # merged with the vid_num_views table from above
             vid_view_info = pd.merge(
@@ -497,13 +449,6 @@ def aimodel(uid, settings, featureSettings, data):
             vid_view_info['vid_user_selected_watch_ratio'] = np.where(
                 vid_view_info['num_distinct_views'] > 0, vid_view_info['num_selected']/vid_view_info['num_distinct_views'], 0)
 
-            # table of the average amount of time in seconds that the video has been watched
-            vid_avg_time_watched = pd.DataFrame.from_dict(data[4])
-            vid_avg_time_watched['vid_avg_time_watched_ratio'] = vid_avg_time_watched['vid_avg_time_watched'] / \
-                vid_avg_time_watched['length']
-
-            # table of the average length of time that has passed since users watched the video and since the video was released
-            vid_avg_interaction_span = pd.DataFrame.from_dict(data[5])
             # vid_avg_interaction_span['vid_avg_interaction_span_days'] = vid_avg_interaction_span['vid_avg_interaction_span_days'].apply(
             #    stripdays)
 
@@ -513,6 +458,9 @@ def aimodel(uid, settings, featureSettings, data):
                 categories, vid_view_info, how='outer', on='vid')
             vidfeatures = pd.merge(
                 vidfeatures, vid_avg_time_watched, how='outer', on='vid')
+            # table of the average amount of time in seconds that the video has been watched
+            vidfeatures['vid_avg_time_watched_ratio'] = vidfeatures['vid_avg_time_watched'] / \
+                vidfeatures['length']
             vidfeatures = pd.merge(
                 vidfeatures, vid_avg_interaction_span, how='outer', on='vid')
             vidfeatures = vidfeatures.fillna(value=0)
@@ -616,7 +564,6 @@ def aimodel(uid, settings, featureSettings, data):
         return(output)
 
     else:
-        print("here")
         output = {'f1score': 0, 'tp': 0, 'fp': 0,
                   'tn': 0, 'fn': 0, 'nusers': 1, 'data': []}
         userIDs = None
@@ -628,7 +575,6 @@ def aimodel(uid, settings, featureSettings, data):
         vid_avg_interaction_span = None
 
         if len(data) > 0:
-            print("here")
             userIDs = pd.DataFrame(data[0], columns=['uid'])
             user_time_watched_ratio = pd.DataFrame.from_dict(data[6])
             categories = pd.DataFrame.from_dict(data[1])
@@ -637,22 +583,13 @@ def aimodel(uid, settings, featureSettings, data):
             vid_avg_time_watched = pd.DataFrame.from_dict(data[4])
             vid_avg_interaction_span = pd.DataFrame.from_dict(data[5])
         else:
-            dbusername = 'dxxgpeye'
-            password = 'LuMS6WYy5EDkUs85hXToB9GtWGF78NSM'
-            host = 'drona.db.elephantsql.com'
-            port = '5432'
-            database = 'dxxgpeye'
+            url = os.environ['DATABASE_URL']
+            engine = create_engine(url)
 
-            engine = create_engine("postgresql+psycopg2://{user}:{pw}@localhost/{db}"
-                                   .format(user=dbusername,
-                                           pw=password,
-                                           db=database))
-            print("after conn")
             sql_user_time_watched = """select amount_of_time_watched, videolibrary.length, userinteractions.vid 
             from userinteractions, videolibrary, userinfo 
             where userinteractions.vid = videolibrary.vid and userinfo.uid = userinteractions.uid
             and userinfo.uid = '{uid}'""".format(uid=uid)
-            print(pd.read_sql_query(sql_num_users, con=engine))
             userIDs = pd.read_sql_query(sql_num_users, con=engine)
             user_time_watched_ratio = pd.read_sql_query(
                 sql_user_time_watched, con=engine)
@@ -666,12 +603,12 @@ def aimodel(uid, settings, featureSettings, data):
                 sql_vid_avg_interaction_span, con=engine)
             vid_avg_interaction_span['vid_avg_interaction_span_days'] = vid_avg_interaction_span['vid_avg_interaction_span_days'].apply(
                 stripdays)
-        print("before num user")
+
         # integer value of number of users. used in later calculations
         num_users = len(userIDs)
         user_time_watched_ratio['if_watched'] = np.where(
             user_time_watched_ratio['amount_of_time_watched']/user_time_watched_ratio['length'] > .75, 1, 0)
-        print("user time")
+
         # used for multilogistic regression
         if settings['modelType'] == 'multilogreg':
             user_time_watched_ratio.index.name = 'index'
@@ -679,7 +616,6 @@ def aimodel(uid, settings, featureSettings, data):
             user_time_watched_ratio['if_watched_multi'] = user_time_watched_ratio['index'].apply(
                 partitionClasses)
             user_time_watched_ratio.drop('index', axis=1)
-        print("settings")
         # table of the categories for all videos in the videolibrary
         categories['primary_category'] = categories['primary_category'].apply(
             rstrip)
@@ -698,16 +634,21 @@ def aimodel(uid, settings, featureSettings, data):
         vid_view_info['vid_user_selected_watch_ratio'] = np.where(
             vid_view_info['num_distinct_views'] > 0, vid_view_info['num_selected']/vid_view_info['num_distinct_views'], 0)
 
-        # table of the average amount of time in seconds that the video has been watched
-        vid_avg_time_watched['vid_avg_time_watched_ratio'] = vid_avg_time_watched['vid_avg_time_watched'] / \
-            vid_avg_time_watched['length']
-
         # merges the tables together by vid to form one large table, vidfeatures
         # vidfeatures is a table of the entire videolibrary with the previously calculated columns
         vidfeatures = pd.merge(
             categories, vid_view_info, how='outer', on='vid')
-        vidfeatures = pd.merge(
-            vidfeatures, vid_avg_time_watched, how='outer', on='vid')
+        if len(data) > 0:
+            # table of the average amount of time in seconds that the video has been watched
+            vid_avg_time_watched['vid_avg_time_watched_ratio'] = vid_avg_time_watched['vid_avg_time_watched'] / \
+                vid_avg_time_watched['length']
+            vidfeatures = pd.merge(
+                vidfeatures, vid_avg_time_watched, how='outer', on='vid')
+        else:
+            vidfeatures = pd.merge(
+                vidfeatures, vid_avg_time_watched, how='outer', on='vid')
+            vidfeatures['vid_avg_time_watched_ratio'] = vidfeatures['vid_avg_time_watched'] / \
+                vidfeatures['length']
         vidfeatures = pd.merge(
             vidfeatures, vid_avg_interaction_span, how='outer', on='vid')
         vidfeatures = vidfeatures.fillna(value=0)
@@ -733,16 +674,13 @@ def aimodel(uid, settings, featureSettings, data):
         # also contains the dependent variable, time_watched
         ttuserint = pd.merge(vidfeatures, user_time_watched_ratio, how='inner', on='vid').drop(
             ['amount_of_time_watched', 'length'], axis=1)
-        print("before keys")
         # this is the subset of the vidfeatures table of the videos that we want to run through the trained model
         # to get our list of probabilities that the selected user will watch each video
         keys = list(ttuserint.vid.values)
         # final table. use this to push through the already trained model
         vidfeatures = vidfeatures[~vidfeatures.vid.isin(keys)]
-        print("vidfeatures")
         # final table. use this to test/train the model
         ttuserint = ttuserint.drop(['vid', 'title'], axis=1)
-        print("last if stat")
         if settings['modelType'] == 'logreg':
             return(runLogisticRegression(ttuserint, vidfeatures))
         elif settings['modelType'] == 'multilogreg':
