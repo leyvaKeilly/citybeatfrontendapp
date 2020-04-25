@@ -361,7 +361,7 @@ export const renderAccuracyFollowUp = function (option, userids) {
         result = `<div class="field">
                     <label class="label" id="nUserFraction_label">nUserFraction</label>
                     <div class="control">
-                        <input id="nUserFraction" class="input" type="number" placeholder="0.66" min="0" max="1"/>
+                        <input id="nUserFraction" class="input" type="number" placeholder="0.66" step="0.01" min="0" max="1"/>
                     </div>
                 </div> 
             `;
@@ -434,8 +434,8 @@ export const runModel = async function (event, featureSettings) {
 
         accuracyOption = "F1Scores";
         showVidTitles = $myForm['showVidTitles']['checked'];
-        console.log(showVidTitles)
         user = $('#user_input')[0].value;
+
         // //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
         // //amount_of_time_watched, length, vid
         let user_time_watched = {}
@@ -493,15 +493,7 @@ export const runModel = async function (event, featureSettings) {
         nUserFraction: nUserFraction
     }
 
-    console.log("User: " + user);
-    console.log("Fix model and settings: ");
-    for (let key in settings) {
-        console.log(settings[key]);
-    }
-    console.log("Features: " + myFeatures);
-
     //Train model with userid, featureSettings, settings, data
-    console.log(data)
     try {
         const result = await trainModel(user, fSettings, settings, data);
         response = result.data.data;
@@ -513,8 +505,7 @@ export const runModel = async function (event, featureSettings) {
         alert(err);
     }
 };
-//'http://localhost:8000/'
-//https://citybeatapp.herokuapp.com/
+
 //AJAX function
 function trainModel(user, featureSettings, settings, data) {
     return axios({
@@ -532,7 +523,6 @@ function trainModel(user, featureSettings, settings, data) {
 
 //Rendering output area with backend response. Note: For this to work properly, the backend needs to send an array called "data" with the predictions
 export const renderOutputArea = function (response) {
-    console.log(response)
     let result = ``;
     let table = ``;
 
