@@ -90,7 +90,7 @@ export const renderFormArea = function () {
     <div class="card-content" style="background-color:rgb(56, 55, 55)">
         <div class="media">
             <div class="media-left">
-                <button onclick="window.open('https://teamd.web.unc.edu/files/2020/04/Test-Plan-Document-1.pdf','resizable=yes')" class="button is-dark is-inverted is-outlined">Documentation</button>
+                <button onclick="window.open('https://teamd.web.unc.edu/files/2020/04/TeamD_Documentation-2.pdf','resizable=yes')" class="button is-dark is-inverted is-outlined">Documentation</button>
             </div>
         </div>
     </div>
@@ -136,13 +136,12 @@ export const renderFormArea = function () {
                     </div>
 
                     </br>
-                    <div class="field">
-                        <div class="control">
-                            <input type='checkbox' id="fromDatabase"/><label for="fromDatabase" class="checkbox"></label> <label class="checkbox">Use data available on database (preferred)</label>
-                            <br>                          
-                        </div>
-                    </div> 
-                    </br>                                                       
+                    <label class="container">
+                        <input id="fromDatabase" type="checkbox"/>
+                        <span class="checkmark" id="showVidTitles">Use data available on database (preferred)</span>                                
+                    </label>
+                    </br>
+                    </br>                                                        
 
                     <div class="field is-grouped">
                         <div class="control">
@@ -279,8 +278,7 @@ export const renderModelsArea = function (featureSettings, pdict, userids) {
                             </div>                               
                             <p><strong> Select features: </strong></p>  
                             ${renderFeatures(featureSettings)}
-                            <br>                           
-
+                            <br>                          
                             <div class="field">
                                 <label class="label" id="numKFolds_label">NumKFolds</label>
                                 <div class="control">
@@ -289,16 +287,9 @@ export const renderModelsArea = function (featureSettings, pdict, userids) {
                             </div>
                             <br>   
                             ${renderAccuracySelector()}                            
-                            <br>            
-                          
+                            <br>        
                             <div id="accuracyFollowUp">${renderAccuracyFollowUp("F1Scores", userids)}</div>
-                            <br> 
-                            
-                            <label class="container">
-                                <input type="checkbox" checked="checked">
-                                <span class="checkmark">To Test</span>                                
-                            </label>
-                                                                           
+                            <br>                                                                            
                         </form>   
                     </div>                      
                     <div id="columns" class="columns is-mobile is-centered is-vcentered">
@@ -360,13 +351,11 @@ export const renderAccuracyFollowUp = function (option, userids) {
                             </div>
                         </div>
                     </div>
-                    <br> 
-                    <div class="field">
-                        <div class="control">
-                            <input type='checkbox' id="showVidTitles"/><label for="showVidTitles"></label> <label>Show video titles</label>
-                            <br>                          
-                        </div>
-                    </div>
+                    <br>
+                    <label class="container">
+                        <input id="showVidTitles" type="checkbox"/>
+                        <span class="checkmark">Show video titles</span>                                
+                    </label> 
                 `;
     } else if (option == "nUserF1Scores") {
         result = `<div class="field">
@@ -390,12 +379,11 @@ export const renderFeatures = function (featureSettings) {
 
     featureSettings.forEach(elem => {
         result += (`
-        <div class="field">
-            <div class="control">
-                <input id=${"box" + i} type='checkbox'/><label for=${"box" + i}></label><label> ${elem} </label>
-                <br>                          
-            </div>
-        </div>
+            <label class="container">
+                <input id=${"box" + i} type="checkbox"/>
+                <span class="checkmark" id="showVidTitles">${elem}</span>                                
+            </label>
+            <br> 
         `);
         i++;
     });
@@ -445,7 +433,8 @@ export const runModel = async function (event, featureSettings) {
     if (preprocessNeeded) {
 
         accuracyOption = "F1Scores";
-        showVidTitles = $('#showVidTitles')[0]['checked'];
+        showVidTitles = $myForm['showVidTitles']['checked'];
+        console.log(showVidTitles)
         user = $('#user_input')[0].value;
         // //user_time_watched is an object with list of videos that the specified user has interacted with in any way with the following columns
         // //amount_of_time_watched, length, vid
@@ -456,7 +445,7 @@ export const runModel = async function (event, featureSettings) {
     } else {
         accuracyOption = $('#checkAccuracy')[0].value;
         if (accuracyOption == "F1Scores") {
-            showVidTitles = $('#showVidTitles')[0]['checked'];
+            showVidTitles = $myForm['showVidTitles']['checked'];
             user = $('#user_input')[0].value;
         } else if (accuracyOption == "nUserF1Scores") {
             nUserFraction = $('#nUserFraction')[0].value;
@@ -524,7 +513,8 @@ export const runModel = async function (event, featureSettings) {
         alert(err);
     }
 };
-
+//'http://localhost:8000/'
+//https://citybeatapp.herokuapp.com/
 //AJAX function
 function trainModel(user, featureSettings, settings, data) {
     return axios({

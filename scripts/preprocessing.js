@@ -124,7 +124,6 @@ export const gettingAvgWatchTime = function (vid_avg_watch_time, video_lib, user
         vid_avg_watch_time['vid_avg_time_watched'].push(avg);
     });
     return vid_avg_watch_time;
-
 };
 
 //vid_avg_interaction_span is an object with vid from each video mapped to the average difference between when the video was watched and when it was released
@@ -150,8 +149,6 @@ export const gettingAvgVidInts = function (vid_avg_interaction_span, video_lib, 
         vid_avg_interaction_span['vid'].push(i.vid);
         vid_avg_interaction_span['vid_avg_interaction_span_days'].push(avgSpan / (1000 * 60 * 60 * 24));
     });
-    console.log(vid_avg_interaction_span)
-
     return vid_avg_interaction_span;
 };
 

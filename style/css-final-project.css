@@ -30,3 +30,23 @@ input[type=checkbox] + label {
 input[type=checkbox]:checked + label {
   background: rgb(1, 99, 197);
 }
+input[type=checkbox]:checked + span:not(.lever)::before {
+  top: -4px;
+  left: -5px;
+  width: 12px;
+  height: 22px;
+  border-top: 2px solid transparent;
+  border-left: 2px solid transparent;
+  border-right: 2px solid #0d64ea;
+  border-bottom: 2px solid #0d64ea;
+  -webkit-transform: rotate(40deg);
+  transform: rotate(40deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform-origin: 100% 100%;
+  transform-origin: 100% 100%;
+}
+label {
+  font-size: .8rem;
+  color: #363636;
+}
