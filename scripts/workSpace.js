@@ -202,45 +202,45 @@ export const handleSubmitButton = async function (event) {
 
         //userids is array of unique users id
         userids = gettingUniqueUsers(userids, user_interactions);
-        data.push(userids);
+        data[0] = userids;
 
         //categories is an object with vid/title/category/subcategory/subsubcategory from every video in the video library
         let categories = {};
         categories = gettingCategories(categories, video_lib);
-        data.push(categories);
+        data[1] = categories;
 
         //vid_num_views is an object with vid from each video in the video library mapped to the count of the distinct number of users that has watched each video
         //keys: vid, num_distinct_views
         let vid_num_views = {}
         vid_num_views = gettingNumViews(vid_num_views, video_lib, user_interactions);
-        data.push(vid_num_views);
+        data[2] = vid_num_views;
 
         //vid_num_selected is an object with vid from each video mapped to the count of distinct users that have selected the video
         //keys: vid, num_selected       
         let vid_num_selected = {}
         vid_num_selected = gettingNumSelected(vid_num_selected, video_lib, user_interactions);
-        data.push(vid_num_selected);
+        data[3] = vid_num_selected;
 
         //vid_avg_watch_time is an object with vid and length from each video in video library mapped to the average amount of time that each video has been watched
         //keys: vid, length, vid_avg_time_watched
         let vid_avg_watch_time = {};
         vid_avg_watch_time = gettingAvgWatchTime(vid_avg_watch_time, video_lib, user_interactions);
-        data.push(vid_avg_watch_time);
+        data[4] = vid_avg_watch_time;
 
         //vid_avg_interaction_span is an object with vid from each video mapped to the average difference between when the video was watched and when it was released
         //keys: vid, vid_avg_interaction_span_days       
         let vid_avg_interaction_span = {};
         vid_avg_interaction_span = gettingAvgVidInts(vid_avg_interaction_span, video_lib, user_interactions);
-        data.push(vid_avg_interaction_span);
+        data[5] = vid_avg_interaction_span;
 
     } else if (fromDatabase) {  //Running model with data from database
 
         preprocessNeeded = false;
-
-        userids = ["abc123", "brc789", "nsk579", "cgb456"];  //Look up in database
+        data = [];
 
         //TO-DO upload features directly from database
         //Generate predefined features to select from data currently available in database
+        userids = ["abc123", "brc789", "nsk579", "cgb456"];  //Look up in database
 
     } else {
         alert("Please, choose your data either from database, or upload two csv files");
