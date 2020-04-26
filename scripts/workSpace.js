@@ -17,11 +17,7 @@ const pdict = "Watch time";
 
 
 export const workPlaceRender = function () {
-    let modals;
     const $body = $("#body");
-
-    modals = document.querySelectorAll('.modal');
-    M.Modal.init(modals);
 
     //Rendering workPlace body
     $body.html(renderFormArea());
@@ -270,7 +266,6 @@ export const renderModelsArea = function (featureSettings, pdict, userids) {
                                             <option>logreg</option>
                                             <option>multilogreg</option>
                                             <option>knn</option>
-                                            <option>xgboost</option>
                                             <option>mlp</option>
                                         </select>
                                     </div>

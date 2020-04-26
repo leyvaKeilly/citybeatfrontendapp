@@ -1,28 +1,70 @@
-# CityNewsBeatAIProject
-  City News Beat, Inc. owns and operates the streaming Television channels Tar Heel News Beat, Seattle News Beat, NYC News Beat and Bay Area News Beat for Roku users. Incubated as part of Cohort 11 in 2019 @Launch-Chapel Hill, a not-for-profit organization funded by the Town of Chapel Hill, Orange County and the University of North Carolina, City News Beat is committed to delivering an agenda-free view of local news and weather for the cord-cutter and Smart TV communities they serve across the USA. 
-  We are going to create an A.I. engine that can read different data sources including questions asked at the time the app is loaded, that matches 3rd party data to know more about the device users’ interests. Our goal is to deliver each user a Newscast-for-1 based on those preferences.
-  
-  # One way to run this app:
-  - Clone this repo: copy the https address, open VScode, View / Command Palette / Git: Clone / paste the address / choose path for this       project.
-  - Install dependencies: right click in root directory for this project from VScode / open in terminal / write in VScode terminal: npm install / npm init (press enter for all options)
-  - Run app in browser: Write in VScode terminal: npx browser-sync start -sw
-      - A new tab should open with the app
-  
-  # To collaborate in this project:
-  - Remember to create your own branch: 
-      - write in VScode terminal: git checkout -b nameOfYourBranch
-      - to go to your branch: git checkout nameOfYourBranch
-  - Before working on your branch make sure your branch is up to date with the master (git checkout nameOfYourBranch / git merge origin/master / git push origin nameOfYourBranch)
-  - Save changes periodically to your branch:
-      - git status    //So you know everything that has been updated
-      - git add .     //Add those changes to the working tree
-      - git commit -m "write your message here"    //Commit changes to working tree
-      - git push origin nameOfYourBranch           //Push updates to your branch in repo
-   - Then, ask for a new pull request to merge with the master branch
-   
-   # The csv file:
-   - First column is the output column
-   - Rest of the columns are inputs
-   - Normalize your data
-   - Choose your settings to train the network (see workSpace.js and ml.js)
-    
+How to deploy this app to Heroku
+
+What you need:
+- Node.js and npm
+- Heroku
+- Git
+- Visual Studio Code (or any other code editor)
+
+
+Open Visual Studio Code (or any other source code editor).
+- Note: This walkthrough uses Visual Studio Code as source code editor.
+  To install VS Code: https://code.visualstudio.com/
+
+Clone the github repo.
+In VS Code:
+- Click View/Command Palette/
+- Type: Git:clone
+- Paste the following link: https://github.com/lkeilly/comp523Project.git
+- Press Enter
+- Select the folder where you would like to clone the repo.
+
+Note: If you don't have git, please download it here:
+https://git-scm.com/downloads
+- Create a github account if you don't have one.
+- Make sure in VS Code the git: Enable setting is checked. For this click in Manage (the tool icon on the bottom left corner) / Settings / type git enable on the search bar and make sure that box is checked.
+- Restart your computer after installing git.
+
+After you cloned the github repo
+- Open the folder that you just cloned (if it's not already opened). For this go to File/Open folder/ and search for the location of the folder on your computer. 
+- Go to Termianl/Open new terminal or right click on comp523Project folder and select open a new terminal.
+
+Note: you should see on the terminal the path to the cloned folder Ex: C:\Users\UserName\Desktop\comp523Project
+
+- If you don't have Node.js: Download and install Node.js OS installer at: https://nodejs.org/en/download/
+
+On the VS Code terminal write: 
+- npm install heroku
+- After heroku is installed write: heroku login
+- You should see something like this: 
+  heroku: Press any key to open up the browser to login or q to exit
+ ›   Warning: If browser does not open, visit
+ ›   https://cli-auth.heroku.com/auth/browser/***
+  heroku: Waiting for login...
+  Logging in... done
+  Logged in as me@example.com
+
+Note: If you don't have a heroku account:
+- On your browser go to heroku: https://dashboard.heroku.com
+- Sign up to create a new account and enter your information.
+
+Write on the VS Code terminal:
+- heroku create nameOfApp --buildpack https://github.com/heroku/heroku-buildpack-static.git
+- git init
+- heroku git:remote -a nameOfApp
+- git push heroku master
+
+Go to heroku
+- Select the app you just created
+- Click on Open app on the top right corner
+
+To save changes made to the heroku app in terminal on VS Code:
+- git add .
+- git commit -m "add a message"
+- git push heroku master
+
+To run locally:
+- On the VS Code termianl: npx browser-sync start -sw
+
+
+- For more help: https://devcenter.heroku.com/articles/

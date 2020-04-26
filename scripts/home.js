@@ -28,7 +28,7 @@ export const homeBody = function () {
             <div class="card-content" style="background-color:rgb(56, 55, 55)">
                 <div class="media">
                     <div class="media-left">
-                        <button onclick="window.open('https://getnewsbeat.com/','resizable=yes')" class="button is-dark is-inverted is-outlined">About City News Beat</button>
+                        <button onclick="window.open('https://www.linkedin.com/company/city-news-beat/','resizable=yes')" class="button is-dark is-inverted is-outlined">About City News Beat</button>
                     </div>
                 </div>
             </div>
