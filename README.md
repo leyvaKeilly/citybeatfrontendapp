@@ -1,4 +1,4 @@
-Welcome to our project for City News Beat!
+# Welcome to our project for City News Beat!
 
 We are a team of four seniors that created an A.I. engine as part of our project for the Software Engineering class at the University of North Carolina - Chapel Hill. Our algorithm reads data of users interactions with City News Beat app and tries to recommend videos based on the user's interests. Our goal is to deliver to each user a Newscast-for-1 based on their preferences.
 
