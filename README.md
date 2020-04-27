@@ -17,7 +17,7 @@ Clone the github repo.
 In VS Code:
 - Click View/Command Palette/
 - Type: Git:clone
-- Paste the following link: https://github.com/lkeilly/comp523Project.git
+- Paste the following link: https://github.com/523TeamD/CityNewsBeatAIDemoAPP.git
 - Press Enter
 - Select the folder where you would like to clone the repo.
 
@@ -29,9 +29,9 @@ https://git-scm.com/downloads
 
 After you cloned the github repo
 - Open the folder that you just cloned (if it's not already opened). For this go to File/Open folder/ and search for the location of the folder on your computer. 
-- Go to Termianl/Open new terminal or right click on comp523Project folder and select open a new terminal.
+- Go to Termianl/Open new terminal or right click on CityNewsBeatAIDemoAPP folder and select open a new terminal.
 
-Note: you should see on the terminal the path to the cloned folder Ex: C:\Users\UserName\Desktop\comp523Project
+Note: you should see on the terminal the path to the cloned folder Ex: C:\Users\UserName\Desktop\CityNewsBeatAIDemoAPP
 
 - If you don't have Node.js: Download and install Node.js OS installer at: https://nodejs.org/en/download/
 
