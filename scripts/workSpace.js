@@ -94,6 +94,11 @@ export const renderFormArea = function () {
                 <button onclick="window.open('https://teamd.web.unc.edu/files/2020/04/TeamD_Documentation-3.pdf','resizable=yes')" class="button is-dark is-inverted is-outlined">Documentation</button>
             </div>
         </div>
+        <div class="media">
+            <div class="media-left">
+                <button onclick="window.open('https://teamd.web.unc.edu/files/2020/04/TeamD_Documentation-3.pdf','resizable=yes')" class="button is-dark is-inverted is-outlined">Walkthrough</button>
+            </div>
+        </div>
     </div>
     <div id="columns" class="columns">    
         <div id="modelRender">
