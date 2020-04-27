@@ -8,8 +8,13 @@ let video_lib_headers = [];
 let user_interactions_headers = [];
 let preprocessNeeded = false;
 let data = [];
-let userids = [];
 
+//This is the backend app url on heroku
+let herokuUrl = 'https://citybeatapp.herokuapp.com/';
+//If the server is running locally use urlLocal on AJAX call to backend
+let urlLocal = 'http://localhost:8000/'
+//These are the users in database. For demo purposes only
+let userids = ["abc123", "brc789", "nsk579", "cgb456"];
 //These are the features that are run through our models
 const featureSettings = ['primary_category', 'sub_category', 'sub_sub_category', 'vid_user_watched_ratio', 'vid_avg_time_watched_ratio', 'vid_avg_interaction_span_days'];
 //This is the output the models are predicting
@@ -86,7 +91,7 @@ export const renderFormArea = function () {
     <div class="card-content" style="background-color:rgb(56, 55, 55)">
         <div class="media">
             <div class="media-left">
-                <button onclick="window.open('https://teamd.web.unc.edu/files/2020/04/TeamD_Documentation-2.pdf','resizable=yes')" class="button is-dark is-inverted is-outlined">Documentation</button>
+                <button onclick="window.open('https://teamd.web.unc.edu/files/2020/04/TeamD_Documentation-3.pdf','resizable=yes')" class="button is-dark is-inverted is-outlined">Documentation</button>
             </div>
         </div>
     </div>
@@ -505,7 +510,7 @@ export const runModel = async function (event, featureSettings) {
 function trainModel(user, featureSettings, settings, data) {
     return axios({
         method: 'post',
-        url: 'https://citybeatapp.herokuapp.com/',
+        url: herokuUrl,
         crossOrigin: true,
         data: {
             user,
