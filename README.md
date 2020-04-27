@@ -1,4 +1,6 @@
-How to deploy this app to Heroku
+To open website demo: https://city-news-beat.herokuapp.com/
+
+To clone the git repo and deploy your own heroku app follow these instructions:
 
 What you need:
 - Node.js and npm
