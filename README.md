@@ -1,3 +1,9 @@
+Welcome to our project for City News Beat!
+
+We are a team of four seniors that created an A.I. engine as part of our project for the Software Engineering class at the University of North Carolina - Chapel Hill. Our algorithm reads data of users interactions with City News Beat app and tries to recommend videos based on the user's interests. Our goal is to deliver to each user a Newscast-for-1 based on their preferences.
+
+We created a website to demo how our algorithm to recommend videos works.
+
 To open website demo: https://city-news-beat.herokuapp.com/
 
 To clone the git repo and deploy your own heroku app follow these instructions:
@@ -68,5 +74,23 @@ To save changes made to the heroku app in terminal on VS Code:
 To run locally:
 - On the VS Code termianl: npx browser-sync start -sw
 
+Note: IMPORTANT
 
-- For more help: https://devcenter.heroku.com/articles/
+Go to https://github.com/523TeamD/comp523citybeatbackend.git and follow the README instructions to set the backend part of this demo.
+
+To communicate your new frontend app with the backend app on heroku:
+
+On backend:
+
+- On VS Code open comp523citybeatbackend folder
+- Open terminal
+- Open the settings.py file and in ALLOWED_HOSTS add the urls of your new frontend and backend apps
+
+On frontend:
+
+- On VS Code open CityNewsBeatAIDemoAPP folder
+- Open terminal
+- On Scripts, open the workSpace.js file and set the herokuUrl variable to the url of your new frontend app.
+
+
+- For more help on Heroku: https://devcenter.heroku.com/articles/
