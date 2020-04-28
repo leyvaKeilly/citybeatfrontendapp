@@ -84,13 +84,13 @@ On backend:
 
 - On VS Code open comp523citybeatbackend folder
 - Open terminal
-- Open the settings.py file and in ALLOWED_HOSTS add the urls of your new frontend and backend apps
+- Open the settings.py file and in ALLOWED_HOSTS add the names of your new frontend and backend apps
 
 On frontend:
 
 - On VS Code open CityNewsBeatAIDemoAPP folder
 - Open terminal
-- On Scripts, open the workSpace.js file and set the herokuUrl variable to the url of your new frontend app.
+- On Scripts, open the workSpace.js file and set the herokuUrl variable to the url of your new backend app.
 
 
 - For more help on Heroku: https://devcenter.heroku.com/articles/
