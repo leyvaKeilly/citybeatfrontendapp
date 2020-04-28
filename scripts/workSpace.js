@@ -170,6 +170,9 @@ export const renderFormArea = function () {
             </div>
         </div>
     </div>
+    <div class="loader-wrapper" style="display:none">
+        <div class="loader is-loading"></div>
+    </div>  
     <div id="output">
     </div>
 </div>
@@ -308,7 +311,7 @@ export const renderModelsArea = function (featureSettings, pdict, userids) {
                 <footer class="card-footer">
                     <a href="#" class="runButton card-footer-item">Run</a>               
                     <a href="#" id="deleteModel" class="card-footer-item">Delete</a>
-                </footer>            
+                </footer>          
             </div>
         </div>        
     `;
@@ -435,6 +438,8 @@ export const runModel = async function (event, featureSettings) {
     let nUserFraction = 0;
     let response = "";
 
+    $('.loader-wrapper').show(); //Showing loader while running the model
+
     if (preprocessNeeded) {
 
         accuracyOption = "F1Scores";
@@ -501,12 +506,14 @@ export const runModel = async function (event, featureSettings) {
     //Train model with userid, featureSettings, settings, data
     try {
         const result = await trainModel(user, fSettings, settings, data);
+        $('.loader-wrapper').hide();
         response = result.data.data;
         //Rendering output area with backend response
         const $output = $("#output");
         $output.html(renderOutputArea(response));
     }
     catch (err) {
+        $('.loader-wrapper').hide();
         alert(err);
     }
 };
