@@ -61,24 +61,24 @@ export const workPlaceRender = function () {
         let stringDate = "release_date";
         try {
             gettingCSVData(event, nameClass, stringDate, video_lib_headers, video_lib);
+            $("#csv1")[0].value = "";
         }
         catch (err) {
             alert(err);
-            //handleClearButton();
         }
     });
 
     //getting data from user_interactions csv file
-    $("#modelRender-form").on('change', '#csv2', () => {
+    $("#modelRender-form").on('input', '#csv2', () => {
         user_interactions = [];
         let nameClass = ".csv2";
         let stringDate = "date_watched";
         try {
             gettingCSVData(event, nameClass, stringDate, user_interactions_headers, user_interactions);
+            $("#csv2")[0].value = "";
         }
         catch (err) {
             alert(err);
-            //handleClearButton();
         }
     });
 };
@@ -96,7 +96,7 @@ export const renderFormArea = function () {
         </div>
         <div class="media">
             <div class="media-left">
-                <button onclick="window.open('https://teamd.web.unc.edu/files/2020/04/TeamD_Documentation-3.pdf','resizable=yes')" class="button is-dark is-inverted is-outlined">Walkthrough</button>
+                <button onclick="window.open('https://www.youtube.com/watch?v=L8MQb1gbe3E#action=share','resizable=yes')" class="button is-dark is-inverted is-outlined">Walkthrough</button>
             </div>
         </div>
     </div>
