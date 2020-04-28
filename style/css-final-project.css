@@ -37,3 +37,17 @@ label {
   font-size: .8rem;
   color: #363636;
 }
+.loader-wrapper {
+  background: #fff;
+  opacity: 1;
+  z-index: 1;
+  transition: opacity .3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+}
+.loader-wrapper .loader {
+  height: 50px;
+  width: 50px;
+}
