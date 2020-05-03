@@ -23,7 +23,7 @@ Clone the github repo.
 In VS Code:
 - Click View/Command Palette/
 - Type: Git:clone
-- Paste the following link: https://github.com/523TeamD/CityNewsBeatAIDemoAPP.git
+- Paste the following link: https://github.com/leyvaKeilly/citybeatfrontendapp.git
 - Press Enter
 - Select the folder where you would like to clone the repo.
 
@@ -35,9 +35,9 @@ https://git-scm.com/downloads
 
 After you cloned the github repo
 - Open the folder that you just cloned (if it's not already opened). For this go to File/Open folder/ and search for the location of the folder on your computer. 
-- Go to Termianl/Open new terminal or right click on CityNewsBeatAIDemoAPP folder and select open a new terminal.
+- Go to Termianl/Open new terminal or right click on citybeatfrontendapp folder and select open a new terminal.
 
-Note: you should see on the terminal the path to the cloned folder Ex: C:\Users\UserName\Desktop\CityNewsBeatAIDemoAPP
+Note: you should see on the terminal the path to the cloned folder Ex: C:\Users\UserName\Desktop\citybeatfrontendapp
 
 - If you don't have Node.js: Download and install Node.js OS installer at: https://nodejs.org/en/download/
 
@@ -76,19 +76,19 @@ To run locally:
 
 Note: IMPORTANT
 
-Go to https://github.com/523TeamD/comp523citybeatbackend.git and follow the README instructions to set the backend part of this demo.
+Go to https://github.com/leyvaKeilly/citybeatbackendapp.git and follow the README instructions to set the backend part of this demo.
 
 To communicate your new frontend app with the backend app on heroku:
 
 On backend:
 
-- On VS Code open comp523citybeatbackend folder
+- On VS Code open citybeatbackendapp folder
 - Open terminal
 - Open the settings.py file and in ALLOWED_HOSTS add the names of your new frontend and backend apps
 
 On frontend:
 
-- On VS Code open CityNewsBeatAIDemoAPP folder
+- On VS Code open citybeatfrontendapp folder
 - Open terminal
 - On Scripts, open the workSpace.js file and set the herokuUrl variable to the url of your new backend app.
 
